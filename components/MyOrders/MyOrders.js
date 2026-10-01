@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle, Info, HighlightOff } from '@mui/icons-material';
 import { getOrders } from '@/utils/ordersData';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './MyOrders.css';
 
 export default function MyOrders() {
@@ -187,8 +186,7 @@ export default function MyOrders() {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* Toast Alert */}
       {toast.show && (
         <div className={`toastContainer ${toast.type}`}>

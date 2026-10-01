@@ -4,7 +4,6 @@ import Link from 'next/link';
 import OrderSummary from '@/components/OrderSummary/OrderSummary';
 import FormElement from '@/utils/FormElement/FormElement';
 import './AddNewAddress.css';
-import StayUpdated from '../StayUpdated/StayUpdated';
 
 export default function AddNewAddress() {
   const [formData, setFormData] = useState({
@@ -222,7 +221,6 @@ export default function AddNewAddress() {
         </div>
       </div>
     </div>
-    <StayUpdated/>
-    </>
+        </>
   );
 }

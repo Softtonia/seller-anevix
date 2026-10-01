@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowBackIosNew, Info } from '@mui/icons-material';
 import { mockOrders } from '@/utils/ordersData';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './OrderDetail.css';
 
 export default function OrderDetail({ id }) {
@@ -97,7 +96,6 @@ export default function OrderDetail({ id }) {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-    </>
+          </>
   );
 }

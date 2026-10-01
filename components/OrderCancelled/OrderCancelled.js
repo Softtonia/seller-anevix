@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowBackIosNew, CheckCircle, Info } from '@mui/icons-material';
 import { getOrderById } from '@/utils/ordersData';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './OrderCancelled.css';
 
 export default function OrderCancelled({ id }) {
@@ -108,7 +107,6 @@ export default function OrderCancelled({ id }) {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-    </>
+          </>
   );
 }

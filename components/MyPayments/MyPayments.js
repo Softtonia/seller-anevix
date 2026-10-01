@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Info, CheckCircle, HighlightOff, AccountBalanceWallet, AddCircleOutlined } from '@mui/icons-material';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './MyPayments.css';
 
 // SVG for Google Pay logo
@@ -339,8 +338,7 @@ export default function MyPayments() {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* View More Transaction Modal */}
       {selectedTxn && (
         <div className="modalOverlay" onClick={() => setSelectedTxn(null)}>

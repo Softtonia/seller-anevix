@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { WarningAmber, CheckCircle, Info, HighlightOff, Security } from '@mui/icons-material';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './LoginSecurity.css';
 
 export default function LoginSecurity() {
@@ -347,8 +346,7 @@ export default function LoginSecurity() {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* 2FA Setup Modal */}
       {show2FAModal && (
         <div className="modalOverlay" onClick={() => setShow2FAModal(false)}>

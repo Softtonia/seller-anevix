@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import OrderSummary from "@/components/OrderSummary/OrderSummary";
 import "./AddressSelect.css";
-import StayUpdated from "@/components/StayUpdated/StayUpdated";
 
 const sampleAddresses = [
   {
@@ -153,7 +152,6 @@ export default function AddressSelect() {
         </div>
       </div>
     </div>
-    <StayUpdated/>
-    </>
+        </>
   );
 }

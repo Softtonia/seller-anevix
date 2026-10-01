@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowBackIosNew, Check, Info } from '@mui/icons-material';
 import { mockOrders } from '@/utils/ordersData';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './OrderTimeline.css';
 
 export default function OrderTimeline({ id }) {
@@ -99,8 +98,7 @@ export default function OrderTimeline({ id }) {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* Toast Alert */}
       {toast.show && (
         <div className="toastContainer success">

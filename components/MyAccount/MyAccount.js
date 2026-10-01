@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Info, CheckCircle } from '@mui/icons-material';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './MyAccount.css';
 
 // Cardboard box icon SVG
@@ -158,8 +157,7 @@ export default function MyAccount() {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* Toast Alert */}
       {toast.show && (
         <div className="toastContainer success">

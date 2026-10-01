@@ -7,7 +7,6 @@ import CustomDropdown from '@/utils/CustomDropdown/CustomDropdown';
 import OrderSummary from '@/components/OrderSummary/OrderSummary';
 import { CheckCircle, Info } from '@mui/icons-material';
 import './PaymentMethod.css';
-import StayUpdated from '../StayUpdated/StayUpdated';
 
 const paymentOptions = [
   {
@@ -383,8 +382,7 @@ export default function PaymentMethod() {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-
+      
       {/* Dropdown Select Menus */}
       <CustomDropdown
         anchorEl={netBankingAnchor}

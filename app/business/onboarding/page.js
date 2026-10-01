@@ -341,7 +341,7 @@ export default function SellerOnboardingPage() {
 
                 <div className="verify-input-group">
                   <div className="form-field">
-                    <label>PAN Number <span className="required">*</span></label>
+                    <label>PAN Number (Max 10 digits) <span className="required">*</span></label>
                     <input type="text" name="panNumber" placeholder="e.g. ABCDE1234F" maxLength={10} value={formData.panNumber} onChange={handleRootChange} disabled={formData.isPanVerified} required />
                   </div>
                   <div className="form-field">

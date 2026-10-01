@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowBackIosNew, Info } from '@mui/icons-material';
 import { getOrderById, cancelOrderById } from '@/utils/ordersData';
-import StayUpdated from '../StayUpdated/StayUpdated';
 import './OrderCancel.css';
 
 const cancellationReasons = [
@@ -113,7 +112,6 @@ export default function OrderCancel({ id }) {
       </div>
 
       {/* Stay Updated Banner */}
-      <StayUpdated />
-    </>
+          </>
   );
 }
