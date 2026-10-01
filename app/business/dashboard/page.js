@@ -74,7 +74,14 @@ export default function BusinessDashboardPage() {
     return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Loading...</div>;
   }
 
-  if (onboardingStatus === 'UNDER_REVIEW' || onboardingStatus === 'pending') {
+  if (onboardingStatus === 'REJECTED') {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/business/onboarding';
+    }
+    return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Redirecting to Onboarding...</div>;
+  }
+
+  if (onboardingStatus === 'UNDER_REVIEW' || onboardingStatus === 'pending' || onboardingStatus === 'PENDING' || onboardingStatus === 'IN_PROGRESS') {
     return (
       <>
         <style>{`
@@ -118,7 +125,7 @@ export default function BusinessDashboardPage() {
       {/* Welcome Banner */}
       <div className="welcome-banner">
         <div className="welcome-text">
-          <h2>Welcome to your Seller Hub, {user.firstName || 'Merchant'}!</h2>
+          <h2>Welcome to your Seller Hub, {sellerProfile?.personalInfo?.fullName?.split(' ')[0] || sellerProfile?.firstName || user.firstName || 'Merchant'}!</h2>
           <p>
             Your seller registration is complete. Start uploading your catalog to start receiving orders across India.
           </p>

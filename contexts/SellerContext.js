@@ -23,8 +23,9 @@ export const SellerProvider = ({ children }) => {
       }
 
       const res = await sellerApi.getOnboardingProfile();
-      // Safely access the profile data depending on how your backend structure returns it
-      const profileData = res.data?.profile || res.data?.b2cProfile || {};
+      const profile = res.data?.profile || {};
+      const b2cProfile = res.data?.b2cProfile || {};
+      const profileData = { ...profile, ...b2cProfile };
       setSellerProfile(profileData);
     } catch (err) {
       console.error('Failed to fetch seller profile:', err);

@@ -40,7 +40,7 @@ export const API_ENDPOINTS = {
       GSTIN: '/business/onboarding/gstin',
       BANK: '/business/onboarding/bank',
       REGISTER_COMPLETE: '/business/onboarding/register-complete',
-      PROFILE: '/users/profile',
+      PROFILE: '/business/onboarding/profile',
     }
   },
   // Roles

@@ -16,12 +16,38 @@ import {
 import toast from 'react-hot-toast';
 import { sellerApi } from '@/api';
 import apiClient from '@/api/axiosClient';
+import { useSeller } from '@/contexts/SellerContext';
 import './Onboarding.css';
 
 export default function SellerOnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const { sellerProfile } = useSeller();
+  const isRejected = sellerProfile?.onboardingStatus === 'REJECTED' || sellerProfile?.status === 'REJECTED';
+  const rejectedFields = sellerProfile?.approvalDetails?.rejectedFields || [];
+  const reviewNotes = sellerProfile?.approvalDetails?.reviewNotes || '';
+
+  const getFieldError = (fieldName) => {
+    if (!isRejected) return null;
+    let fieldObj = rejectedFields.find(f => f.field === fieldName);
+    if (!fieldObj && fieldName === 'bankDocument') {
+      fieldObj = rejectedFields.find(f => f.field === 'bankDocumentUrl');
+    }
+    return fieldObj ? fieldObj.reason : null;
+  };
+
+  const isFieldDisabled = (fieldName, defaultDisabled) => {
+    if (isRejected) {
+      if (fieldName === 'bankDocument') {
+        return !rejectedFields.some(f => f.field === 'bankDocument' || f.field === 'bankDocumentUrl');
+      }
+      return !rejectedFields.some(f => f.field === fieldName);
+    }
+    return defaultDisabled;
+  };
+
 
   // Load saved progress from localStorage on mount
   useEffect(() => {
@@ -82,36 +108,66 @@ export default function SellerOnboardingPage() {
   });
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    if (sellerProfile) {
+      setFormData((prev) => {
+        let newData = { ...prev };
+        
+        newData.fullName = sellerProfile.name || sellerProfile.firstName ? `${sellerProfile.firstName || ''} ${sellerProfile.lastName || ''}`.trim() : prev.fullName;
+        newData.mobileNumber = sellerProfile.phoneNumber || sellerProfile.mobileNumber || sellerProfile.phone || prev.mobileNumber;
+        newData.emailAddress = sellerProfile.email || prev.emailAddress;
+
+        if (isRejected) {
+          const pi = sellerProfile.personalInfo || {};
+          const bi = sellerProfile.businessInfo || {};
+          const ba = bi.businessAddress || {};
+          const bki = sellerProfile.bankingInfo || {};
+
+          newData = {
+            ...newData,
+            fullName: pi.fullName || newData.fullName,
+            mobileNumber: pi.mobile || newData.mobileNumber,
+            emailAddress: pi.email || newData.emailAddress,
+            dob: pi.dateOfBirth || '',
+            panNumber: pi.pan || '',
+            companyName: bi.businessName || '',
+            businessType: bi.businessType || 'PRIVATE_LIMITED',
+            sellerType: bi.sellerType || 'RETAILER',
+            gstinNumber: bi.gstin || '',
+            street: ba.street || '',
+            city: ba.city || '',
+            state: ba.state || '',
+            pinCode: ba.zipCode || '',
+            accountHolderName: bki.accountHolderName || '',
+            bankName: bki.bankName || 'State Bank of India',
+            accountNumber: bki.accountNumber || '',
+            ifscCode: bki.ifsc || '',
+            bankDocument: bki.bankDocumentUrl || '',
+            isPanVerified: true,
+            isGstinVerified: true,
+            isBankVerified: true,
+          };
+          
+          if (rejectedFields.some(f => f.field === 'panNumber')) newData.isPanVerified = false;
+          if (rejectedFields.some(f => f.field === 'gstinNumber')) newData.isGstinVerified = false;
+          if (rejectedFields.some(f => f.field === 'accountNumber' || f.field === 'ifscCode' || f.field === 'accountHolderName' || f.field === 'bankDocumentUrl' || f.field === 'bankDocument')) newData.isBankVerified = false;
+        }
+        return newData;
+      });
+    } else {
       try {
-        const response = await apiClient.get('/users/profile');
-        const user = response.data?.profile || response.data?.user || response.data;
-        if (user) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
           setFormData((prev) => ({
             ...prev,
-            fullName: user.name || user.firstName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : prev.fullName,
-            mobileNumber: user.phoneNumber || user.mobileNumber || user.phone || prev.mobileNumber,
-            emailAddress: user.email || prev.emailAddress,
+            fullName: u.name || u.firstName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : prev.fullName,
+            mobileNumber: u.mobileNumber || u.phone || prev.mobileNumber,
+            emailAddress: u.email || prev.emailAddress,
           }));
         }
-      } catch (err) {
-        // Fallback to localStorage if API fails
-        try {
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            const u = JSON.parse(storedUser);
-            setFormData((prev) => ({
-              ...prev,
-              fullName: u.name || u.firstName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : prev.fullName,
-              mobileNumber: u.mobileNumber || u.phone || prev.mobileNumber,
-              emailAddress: u.email || prev.emailAddress,
-            }));
-          }
-        } catch (e) {}
-      }
-    };
-    fetchProfile();
-  }, []);
+      } catch (e) {}
+    }
+  }, [sellerProfile, isRejected]);
 
   // Save progress on form data change
   useEffect(() => {
@@ -349,7 +405,16 @@ export default function SellerOnboardingPage() {
 
         {/* Form Card */}
         <div className="onboarding-form-card">
-          <form onSubmit={handleNextStep}>
+          {isRejected && (
+            <div className="info-alert" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171', color: '#991b1b', marginBottom: '24px' }}>
+              <InfoOutlined fontSize="small" style={{ color: '#ef4444' }} />
+              <div>
+                <strong style={{ display: 'block', marginBottom: '4px' }}>Your application was rejected. Please correct the highlighted fields and resubmit.</strong>
+                {reviewNotes && <span>Admin Note: {reviewNotes}</span>}
+              </div>
+            </div>
+          )}
+          <form className="onboarding-form" onSubmit={handleNextStep}>
             
             {/* STEP 1: Profile & Business Information */}
             {currentStep === 1 && (
@@ -361,22 +426,26 @@ export default function SellerOnboardingPage() {
                 <div className="form-grid-3">
                   <div className="form-field">
                     <label>Full Name <span className="required">*</span></label>
-                    <input type="text" name="fullName" placeholder="e.g. John Doe" value={formData.fullName} onChange={handleRootChange} required />
+                    <input type="text" name="fullName" placeholder="e.g. John Doe" value={formData.fullName} onChange={handleRootChange} required  disabled={isFieldDisabled("fullName", false)} />
+{getFieldError("fullName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("fullName")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Mobile Number <span className="required">*</span></label>
-                    <input type="text" name="mobileNumber" placeholder="+91 98765 43210" value={formData.mobileNumber} onChange={handleRootChange} required />
+                    <input type="text" name="mobileNumber" placeholder="+91 98765 43210" value={formData.mobileNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("mobileNumber", false)} />
+{getFieldError("mobileNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("mobileNumber")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Email Address <span className="required">*</span></label>
-                    <input type="email" name="emailAddress" placeholder="you@domain.com" value={formData.emailAddress} onChange={handleRootChange} disabled required />
+                    <input type="email" name="emailAddress" placeholder="you@domain.com" value={formData.emailAddress} onChange={handleRootChange} required  disabled={isFieldDisabled("emailAddress", false)} />
+{getFieldError("emailAddress") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("emailAddress")}</div>}
                   </div>
                 </div>
 
                 <div className="form-grid-3">
                   <div className="form-field">
                     <label>Date of Birth <span className="required">(Optional)</span></label>
-                    <input type="text" name="dob" placeholder="DD / MM / YYYY" value={formData.dob} onChange={handleRootChange} />
+                    <input type="text" name="dob" placeholder="DD / MM / YYYY" value={formData.dob} onChange={handleRootChange}  disabled={isFieldDisabled("dob", false)} />
+{getFieldError("dob") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("dob")}</div>}
                   </div>
                 </div>
 
@@ -387,14 +456,15 @@ export default function SellerOnboardingPage() {
                 <div className="form-grid-3">
                   <div className="form-field" style={{ gridColumn: 'span 3' }}>
                     <label>Business Name <span className="required">*</span></label>
-                    <input type="text" name="companyName" placeholder="e.g. Acme Corp" value={formData.companyName} onChange={handleRootChange} required />
+                    <input type="text" name="companyName" placeholder="e.g. Acme Corp" value={formData.companyName} onChange={handleRootChange} required  disabled={isFieldDisabled("companyName", false)} />
+{getFieldError("companyName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("companyName")}</div>}
                   </div>
                 </div>
 
                 <div className="form-grid-2">
                   <div className="form-field">
                     <label>Business Type <span className="required">*</span></label>
-                    <select name="businessType" value={formData.businessType} onChange={handleRootChange} required>
+                    <select name="businessType" value={formData.businessType} onChange={handleRootChange} required disabled={isFieldDisabled("businessType", false)}>
                       <option value="PRIVATE_LIMITED">Private Limited</option>
                       <option value="PROPRIETORSHIP">Sole Proprietorship</option>
                       <option value="PARTNERSHIP">Partnership Firm</option>
@@ -402,42 +472,48 @@ export default function SellerOnboardingPage() {
                       <option value="PUBLIC_LIMITED">Public Limited</option>
                       <option value="INDIVIDUAL">Individual / Freelancer</option>
                     </select>
+{getFieldError("businessType") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("businessType")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Seller Type <span className="required">*</span></label>
-                    <select name="sellerType" value={formData.sellerType} onChange={handleRootChange} required>
+                    <select name="sellerType" value={formData.sellerType} onChange={handleRootChange} required disabled={isFieldDisabled("sellerType", false)}>
                       <option value="RETAILER">Retailer</option>
                       <option value="WHOLESALER">Wholesaler</option>
                       <option value="MANUFACTURER">Manufacturer</option>
                       <option value="DISTRIBUTOR">Distributor</option>
                       <option value="BRAND_OWNER">Brand Owner</option>
                     </select>
+{getFieldError("sellerType") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("sellerType")}</div>}
                   </div>
                 </div>
 
                 <div className="form-field">
                   <label>Business Address <span className="required">*</span></label>
-                  <input type="text" name="street" placeholder="House no., Street, Area" value={formData.street} onChange={handleRootChange} required />
+                  <input type="text" name="street" placeholder="House no., Street, Area" value={formData.street} onChange={handleRootChange} required  disabled={isFieldDisabled("street", false)} />
+{getFieldError("street") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("street")}</div>}
                 </div>
 
                 <div className="form-grid-3">
                   <div className="form-field">
                     <label>City <span className="required">*</span></label>
-                    <input type="text" name="city" placeholder="e.g. Bangalore" value={formData.city} onChange={handleRootChange} required />
+                    <input type="text" name="city" placeholder="e.g. Bangalore" value={formData.city} onChange={handleRootChange} required  disabled={isFieldDisabled("city", false)} />
+{getFieldError("city") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("city")}</div>}
                   </div>
                   <div className="form-field">
                     <label>State <span className="required">*</span></label>
-                    <select name="state" value={formData.state} onChange={handleRootChange} required>
+                    <select name="state" value={formData.state} onChange={handleRootChange} required disabled={isFieldDisabled("state", false)}>
                       <option value="">Select State</option>
                       <option value="Karnataka">Karnataka</option>
                       <option value="Maharashtra">Maharashtra</option>
                       <option value="Delhi">Delhi</option>
                       <option value="Chandigarh">Chandigarh</option>
                     </select>
+{getFieldError("state") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("state")}</div>}
                   </div>
                   <div className="form-field">
                     <label>PIN Code (6 digits) <span className="required">*</span></label>
-                    <input type="text" name="pinCode" placeholder="e.g. 560001" maxLength={6} pattern="\d{6}" title="Please enter a valid 6-digit PIN code" value={formData.pinCode} onChange={handleRootChange} required />
+                    <input type="text" name="pinCode" placeholder="e.g. 560001" maxLength={6} pattern="\d{6}" title="Please enter a valid 6-digit PIN code" value={formData.pinCode} onChange={handleRootChange} required  disabled={isFieldDisabled("pinCode", false)} />
+{getFieldError("pinCode") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("pinCode")}</div>}
                   </div>
                 </div>
               </>
@@ -456,11 +532,13 @@ export default function SellerOnboardingPage() {
                 <div className="verify-input-group">
                   <div className="form-field">
                     <label>PAN Number (Max 10 digits) <span className="required">*</span></label>
-                    <input type="text" name="panNumber" placeholder="e.g. ABCDE1234F" maxLength={10} value={formData.panNumber} onChange={handleRootChange} disabled={formData.isPanVerified} required />
+                    <input type="text" name="panNumber" placeholder="e.g. ABCDE1234F" maxLength={10} value={formData.panNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("panNumber", formData.isPanVerified)} />
+{getFieldError("panNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("panNumber")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Name as per PAN <span className="required">*</span></label>
-                    <input type="text" name="nameOnPan" placeholder="e.g. John Doe" value={formData.nameOnPan} onChange={handleRootChange} disabled={formData.isPanVerified} required />
+                    <input type="text" name="nameOnPan" placeholder="e.g. John Doe" value={formData.nameOnPan} onChange={handleRootChange} required  disabled={isFieldDisabled("nameOnPan", formData.isPanVerified)} />
+{getFieldError("nameOnPan") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("nameOnPan")}</div>}
                   </div>
                   {!formData.isPanVerified && (
                     <button type="button" className="btn-verify" onClick={handleVerifyPan} disabled={loading}>
@@ -523,7 +601,8 @@ export default function SellerOnboardingPage() {
                 <div className="verify-input-group" style={{ marginBottom: '24px', maxWidth: '600px' }}>
                   <div className="form-field">
                     <label>GSTIN <span className="required">*</span></label>
-                    <input type="text" name="gstinNumber" placeholder="e.g. 22AAAAA0000A1Z5" value={formData.gstinNumber} onChange={handleRootChange} disabled={formData.isGstinVerified} required />
+                    <input type="text" name="gstinNumber" placeholder="e.g. 22AAAAA0000A1Z5" value={formData.gstinNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("gstinNumber", formData.isGstinVerified)} />
+{getFieldError("gstinNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("gstinNumber")}</div>}
                   </div>
                   {!formData.isGstinVerified && (
                     <button type="button" className="btn-verify" onClick={handleValidateGstin} disabled={loading}>
@@ -607,38 +686,43 @@ export default function SellerOnboardingPage() {
                 <div className="form-grid-3">
                   <div className="form-field">
                     <label>Account Holder Name <span className="required">*</span></label>
-                    <input type="text" name="accountHolderName" placeholder="e.g. John Doe" value={formData.accountHolderName} onChange={handleRootChange} required />
+                    <input type="text" name="accountHolderName" placeholder="e.g. John Doe" value={formData.accountHolderName} onChange={handleRootChange} required  disabled={isFieldDisabled("accountHolderName", formData.isBankVerified)} />
+{getFieldError("accountHolderName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("accountHolderName")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Bank Name <span className="required">*</span></label>
-                    <select name="bankName" value={formData.bankName} onChange={handleRootChange}>
+                    <select name="bankName" value={formData.bankName} onChange={handleRootChange} disabled={isFieldDisabled("bankName", formData.isBankVerified)}>
                       <option value="State Bank of India">State Bank of India</option>
                       <option value="HDFC Bank">HDFC Bank</option>
                       <option value="ICICI Bank">ICICI Bank</option>
                     </select>
+{getFieldError("bankName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("bankName")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Account Number <span className="required">*</span></label>
-                    <input type="text" name="accountNumber" placeholder="e.g. 123456789012" value={formData.accountNumber} onChange={handleRootChange} required />
+                    <input type="text" name="accountNumber" placeholder="e.g. 123456789012" value={formData.accountNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("accountNumber", formData.isBankVerified)} />
+{getFieldError("accountNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("accountNumber")}</div>}
                   </div>
                 </div>
 
                 <div className="form-grid-2" style={{ gridTemplateColumns: '1fr 2fr' }}>
                   <div className="form-field">
                     <label>IFSC <span className="required">*</span></label>
-                    <input type="text" name="ifscCode" placeholder="e.g. SBIN0001234" value={formData.ifscCode} onChange={handleRootChange} required />
+                    <input type="text" name="ifscCode" placeholder="e.g. SBIN0001234" value={formData.ifscCode} onChange={handleRootChange} required  disabled={isFieldDisabled("ifscCode", formData.isBankVerified)} />
+{getFieldError("ifscCode") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("ifscCode")}</div>}
                   </div>
                   <div className="form-field">
                     <label>Cancelled Cheque / Bank Document <span className="required">*</span></label>
                     <div className="file-upload-box">
                       <input type="file" id="bankDocument" name="bankDocument" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleRootChange} />
-                      <label htmlFor="bankDocument" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', width: '100%', margin: 0 }}>
+                      <label htmlFor="bankDocument" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', width: '100%', margin: 0, opacity: isFieldDisabled("bankDocument", formData.isBankVerified) ? 0.6 : 1, pointerEvents: isFieldDisabled("bankDocument", formData.isBankVerified) ? "none" : "auto" }}>
                         <FileUploadOutlined className="upload-icon" />
                         <span className="upload-text">
-                          {formData.bankDocument ? formData.bankDocument.name : 'Click to upload or drag and drop'}
+                          {formData.bankDocument ? (typeof formData.bankDocument === 'string' ? 'Document Uploaded' : formData.bankDocument.name) : 'Click to upload or drag and drop'}
                         </span>
                         <span className="upload-subtext">PDF, JPG, PNG (Max 5MB)</span>
                       </label>
+{getFieldError("bankDocument") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("bankDocument")}</div>}
                     </div>
                   </div>
                 </div>
@@ -693,7 +777,7 @@ export default function SellerOnboardingPage() {
                 <div></div>
               )}
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Processing...' : (currentStep === 4 ? 'Submit Registration' : 'Save & Continue')}
+                {loading ? 'Processing...' : (currentStep === 4 ? (isRejected ? 'Resubmit Application' : 'Submit Registration') : 'Save & Continue')}
                 {currentStep < 4 && <ArrowForwardOutlined fontSize="small" />}
               </button>
             </div>
