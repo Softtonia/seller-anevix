@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+
   workflow_dispatch:
 
 concurrency:
@@ -12,7 +13,9 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  APP_NAME: anevix-seller
   BASE_PATH: /var/www/seller.anevix.in
+  NODE_ENV: production
 
 jobs:
   deploy:
@@ -21,90 +24,231 @@ jobs:
     environment: dev
 
     steps:
+      # ---------------------------------------------------------
+      # Checkout
+      # ---------------------------------------------------------
+
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      - name: Check React Project Exists
+      # ---------------------------------------------------------
+      # Detect Project
+      # ---------------------------------------------------------
+
+      - name: Check Next.js Project
         id: project_check
+        shell: bash
         run: |
-          if [ -f package.json ]; then
-            echo "project_exists=true" >> "$GITHUB_OUTPUT"
-            echo "React project detected"
-          else
-            echo "project_exists=false" >> "$GITHUB_OUTPUT"
-            echo "React project not added yet. Skipping deployment."
+          set -euo pipefail
+
+          if [ ! -f package.json ]; then
+            echo "ERROR: package.json not found"
+            exit 1
           fi
 
+          if ! grep -q '"next"' package.json; then
+            echo "ERROR: Next.js dependency not found in package.json"
+            exit 1
+          fi
+
+          echo "Next.js project detected"
+
+      # ---------------------------------------------------------
+      # Node
+      # ---------------------------------------------------------
+
       - name: Setup Node.js
-        if: steps.project_check.outputs.project_exists == 'true'
         uses: actions/setup-node@v5
         with:
           node-version: '24.8.0'
           cache: npm
 
+      # ---------------------------------------------------------
+      # Dependencies
+      # ---------------------------------------------------------
+
       - name: Install Dependencies
-        if: steps.project_check.outputs.project_exists == 'true'
+        shell: bash
         run: |
           set -euo pipefail
 
           if [ -f package-lock.json ]; then
-            npm ci --legacy-peer-deps --no-audit --no-fund
+            echo "Using npm ci"
+
+            npm ci \
+              --legacy-peer-deps \
+              --no-audit \
+              --no-fund
           else
-            npm install --legacy-peer-deps --no-audit --no-fund
+            echo "package-lock.json not found"
+            echo "Using npm install"
+
+            npm install \
+              --legacy-peer-deps \
+              --no-audit \
+              --no-fund
           fi
 
-      - name: Create Environment
-        if: steps.project_check.outputs.project_exists == 'true'
+      # ---------------------------------------------------------
+      # Environment
+      # ---------------------------------------------------------
+
+      - name: Create Production Environment
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-        run: |
-          if [ -n "${VITE_API_URL:-}" ]; then
-            printf 'VITE_API_URL=%s\n' "$VITE_API_URL" > .env.production
-          fi
-
-      - name: Build React App
-        if: steps.project_check.outputs.project_exists == 'true'
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        shell: bash
         run: |
           set -euo pipefail
 
-          rm -rf dist build
+          rm -f .env.production
+
+          touch .env.production
+
+          if [ -n "${NEXT_PUBLIC_API_URL:-}" ]; then
+            printf 'NEXT_PUBLIC_API_URL=%s\n' "$NEXT_PUBLIC_API_URL" >> .env.production
+          fi
+
+          if [ -n "${NEXT_PUBLIC_APP_URL:-}" ]; then
+            printf 'NEXT_PUBLIC_APP_URL=%s\n' "$NEXT_PUBLIC_APP_URL" >> .env.production
+          fi
+
+          echo ".env.production created"
+
+      # ---------------------------------------------------------
+      # Validate important files before build
+      # ---------------------------------------------------------
+
+      - name: Validate Source Files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Checking repository..."
+
+          git status --short
+
+          echo ""
+          echo "Next.js version:"
+          node -p "require('./node_modules/next/package.json').version"
+
+          echo ""
+          echo "Checking components directory..."
+
+          if [ -d components ]; then
+            find components -maxdepth 2 -type f | sort | head -200
+          else
+            echo "WARNING: components directory not found"
+          fi
+
+      # ---------------------------------------------------------
+      # Build
+      # ---------------------------------------------------------
+
+      - name: Build Next.js Application
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf .next
 
           npm run build
 
-      - name: Detect Build Directory
-        if: steps.project_check.outputs.project_exists == 'true'
+      # ---------------------------------------------------------
+      # Verify Build
+      # ---------------------------------------------------------
+
+      - name: Verify Next.js Build
+        shell: bash
         run: |
           set -euo pipefail
 
-          if [ -f dist/index.html ]; then
-            echo "BUILD_DIR=dist" >> "$GITHUB_ENV"
-            echo "Build directory: dist"
-
-          elif [ -f build/index.html ]; then
-            echo "BUILD_DIR=build" >> "$GITHUB_ENV"
-            echo "Build directory: build"
-
-          else
-            echo "ERROR: Build output not found"
+          if [ ! -d ".next" ]; then
+            echo "ERROR: .next directory was not created"
             exit 1
           fi
 
-      - name: Create Build Archive
-        if: steps.project_check.outputs.project_exists == 'true'
+          echo "Next.js build completed"
+
+          du -sh .next
+
+      # ---------------------------------------------------------
+      # Prepare Deployment Package
+      # ---------------------------------------------------------
+
+      - name: Prepare Deployment Package
+        shell: bash
         run: |
           set -euo pipefail
 
-          tar -czf seller-build.tar.gz -C "$BUILD_DIR" .
+          rm -rf deployment
 
-          echo "Build archive created:"
+          mkdir -p deployment
+
+          cp -r .next deployment/.next
+
+          if [ -d public ]; then
+            cp -r public deployment/public
+          fi
+
+          cp package.json deployment/package.json
+
+          if [ -f package-lock.json ]; then
+            cp package-lock.json deployment/package-lock.json
+          fi
+
+          if [ -f next.config.js ]; then
+            cp next.config.js deployment/next.config.js
+          fi
+
+          if [ -f next.config.mjs ]; then
+            cp next.config.mjs deployment/next.config.mjs
+          fi
+
+          if [ -f next.config.ts ]; then
+            cp next.config.ts deployment/next.config.ts
+          fi
+
+          if [ -f next.config.cjs ]; then
+            cp next.config.cjs deployment/next.config.cjs
+          fi
+
+          if [ -f .env.production ]; then
+            cp .env.production deployment/.env.production
+          fi
+
+          echo "${GITHUB_SHA}" > deployment/deploy-version.txt
+
+          echo "Deployment package:"
+          find deployment -maxdepth 2 -type f | sort | head -200
+
+      # ---------------------------------------------------------
+      # Archive
+      # ---------------------------------------------------------
+
+      - name: Create Deployment Archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tar \
+            --exclude='.DS_Store' \
+            -czf seller-build.tar.gz \
+            -C deployment \
+            .
+
           ls -lh seller-build.tar.gz
 
+      # ---------------------------------------------------------
+      # SSH
+      # ---------------------------------------------------------
+
       - name: Setup SSH
-        if: steps.project_check.outputs.project_exists == 'true'
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -116,6 +260,7 @@ jobs:
           chmod 700 ~/.ssh
 
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/seller_key
+
           chmod 600 ~/.ssh/seller_key
 
           ssh-keyscan \
@@ -123,11 +268,15 @@ jobs:
             -H "$SERVER_HOST" \
             >> ~/.ssh/known_hosts
 
-      - name: Upload Build
-        if: steps.project_check.outputs.project_exists == 'true'
+      # ---------------------------------------------------------
+      # Upload
+      # ---------------------------------------------------------
+
+      - name: Upload Deployment
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -143,12 +292,16 @@ jobs:
             seller-build.tar.gz \
             "$SERVER_USER@$SERVER_HOST:$BASE_PATH/.deploy_tmp/seller-build-${GITHUB_SHA}.tar.gz"
 
-      - name: Activate Release
-        if: steps.project_check.outputs.project_exists == 'true'
+      # ---------------------------------------------------------
+      # Activate
+      # ---------------------------------------------------------
+
+      - name: Activate Deployment
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           GIT_SHA: ${{ github.sha }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -156,40 +309,151 @@ jobs:
             -i ~/.ssh/seller_key \
             -p "$SSH_PORT" \
             "$SERVER_USER@$SERVER_HOST" \
-            "BASE_PATH='$BASE_PATH' GIT_SHA='$GIT_SHA' bash -s" <<'SERVER_SCRIPT'
+            "BASE_PATH='$BASE_PATH' APP_NAME='$APP_NAME' GIT_SHA='$GIT_SHA' bash -s" <<'SERVER_SCRIPT'
 
             set -euo pipefail
 
             RELEASE="$BASE_PATH/releases/$GIT_SHA"
             ARCHIVE="$BASE_PATH/.deploy_tmp/seller-build-$GIT_SHA.tar.gz"
 
+            echo "======================================"
+            echo "Deploying Anevix Seller"
+            echo "Release: $GIT_SHA"
+            echo "======================================"
+
+            # -------------------------------------------------
+            # Prepare release
+            # -------------------------------------------------
+
             rm -rf "$RELEASE"
+
             mkdir -p "$RELEASE"
 
-            echo "Extracting release..."
+            # -------------------------------------------------
+            # Extract
+            # -------------------------------------------------
 
-            tar -xzf "$ARCHIVE" -C "$RELEASE"
+            tar \
+              -xzf "$ARCHIVE" \
+              -C "$RELEASE"
 
-            if [ ! -f "$RELEASE/index.html" ]; then
-              echo "ERROR: index.html missing from release"
+            # -------------------------------------------------
+            # Validate
+            # -------------------------------------------------
+
+            if [ ! -d "$RELEASE/.next" ]; then
+              echo "ERROR: .next directory missing"
               exit 1
             fi
 
+            if [ ! -f "$RELEASE/package.json" ]; then
+              echo "ERROR: package.json missing"
+              exit 1
+            fi
+
+            # -------------------------------------------------
+            # Version
+            # -------------------------------------------------
+
             echo "$GIT_SHA" > "$RELEASE/deploy-version.txt"
 
-            echo "Updating current release..."
+            # -------------------------------------------------
+            # Install production dependencies
+            # -------------------------------------------------
 
-            ln -sfn "$RELEASE" "$BASE_PATH/current"
+            cd "$RELEASE"
 
-            echo "Updating Nginx dist directory..."
+            if [ -f package-lock.json ]; then
 
-            rm -rf "$BASE_PATH/dist"
+              echo "Installing production dependencies..."
 
-            ln -s "$RELEASE" "$BASE_PATH/dist"
+              npm ci \
+                --omit=dev \
+                --legacy-peer-deps \
+                --no-audit \
+                --no-fund
+
+            else
+
+              echo "package-lock.json not found"
+
+              npm install \
+                --omit=dev \
+                --legacy-peer-deps \
+                --no-audit \
+                --no-fund
+
+            fi
+
+            # -------------------------------------------------
+            # Remove temporary archive
+            # -------------------------------------------------
 
             rm -f "$ARCHIVE"
 
-            echo "Cleaning old releases..."
+            # -------------------------------------------------
+            # Current symlink
+            # -------------------------------------------------
+
+            ln -sfn "$RELEASE" "$BASE_PATH/current"
+
+            # -------------------------------------------------
+            # PM2
+            # -------------------------------------------------
+
+            if command -v pm2 >/dev/null 2>&1; then
+
+              echo "PM2 detected"
+
+            else
+
+              echo "ERROR: PM2 is not installed"
+              echo "Install PM2 on server first:"
+              echo "sudo npm install -g pm2"
+
+              exit 1
+
+            fi
+
+            # -------------------------------------------------
+            # Start / Restart application
+            # -------------------------------------------------
+
+            cd "$BASE_PATH/current"
+
+            if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+
+              echo "Restarting existing application..."
+
+              pm2 restart "$APP_NAME" \
+                --update-env
+
+            else
+
+              echo "Starting application..."
+
+              pm2 start npm \
+                --name "$APP_NAME" \
+                -- start
+
+            fi
+
+            # -------------------------------------------------
+            # Save PM2 process list
+            # -------------------------------------------------
+
+            pm2 save
+
+            # -------------------------------------------------
+            # Show status
+            # -------------------------------------------------
+
+            pm2 status
+
+            # -------------------------------------------------
+            # Cleanup old releases
+            # Keep latest 5
+            # -------------------------------------------------
 
             cd "$BASE_PATH/releases"
 
@@ -197,40 +461,41 @@ jobs:
               | tail -n +6 \
               | xargs -r rm -rf || true
 
-            echo "===================================="
-            echo "Anevix Seller deployed successfully"
-            echo "Commit: $GIT_SHA"
-            echo "Release: $RELEASE"
-            echo "===================================="
+            echo "======================================"
+            echo "Deployment successful"
+            echo "Release: $GIT_SHA"
+            echo "======================================"
 
           SERVER_SCRIPT
 
+      # ---------------------------------------------------------
+      # Verify Website
+      # ---------------------------------------------------------
+
       - name: Verify Deployment
-        if: steps.project_check.outputs.project_exists == 'true'
+        shell: bash
         run: |
           set -euo pipefail
 
+          echo "Checking https://seller.anevix.in"
+
           HTTP_CODE=$(curl \
             -L \
-            -s \
-            -o /dev/null \
-            -w "%{http_code}" \
+            --silent \
+            --show-error \
+            --output /dev/null \
+            --write-out "%{http_code}" \
+            --max-time 30 \
             https://seller.anevix.in)
 
           echo "HTTP Status: $HTTP_CODE"
 
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERROR: Deployment verification failed"
+            echo "ERROR: Website verification failed"
             exit 1
           fi
 
-          echo "Seller deployment verified successfully."
-
-      - name: Project Not Added Yet
-        if: steps.project_check.outputs.project_exists == 'false'
-        run: |
-          echo "===================================="
-          echo "Anevix Seller project not present yet"
-          echo "Workflow is ready"
-          echo "Deployment skipped"
-          echo "===================================="
+          echo "======================================"
+          echo "Seller deployment verified"
+          echo "https://seller.anevix.in"
+          echo "======================================"
