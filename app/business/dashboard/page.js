@@ -8,25 +8,36 @@ import {
   AttachMoneyOutlined,
   PeopleAltOutlined,
   CheckCircle,
-  AddCircleOutlineOutlined,
   StorefrontOutlined,
   ArrowForwardOutlined,
+  HourglassEmptyOutlined,
+  AssignmentOutlined,
+  AccessTimeFilled,
+  PersonOutlineOutlined,
+  AddCircleOutlineOutlined
 } from '@mui/icons-material';
+import { useSeller } from '@/contexts/SellerContext';
 import './Dashboard.css';
 
 export default function BusinessDashboardPage() {
   const [user, setUser] = useState({ firstName: 'Seller', lastName: '' });
+  const { sellerProfile, isLoading: contextLoading } = useSeller();
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        setUser(JSON.parse(stored));
+    const init = async () => {
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          setUser(JSON.parse(stored));
+        }
+      } catch (e) {
+        // ignore
       }
-    } catch (e) {
-      // ignore
-    }
+    };
+    init();
   }, []);
+
+  const onboardingStatus = sellerProfile?.onboardingStatus || sellerProfile?.status;
 
   const stats = [
     {
@@ -58,6 +69,49 @@ export default function BusinessDashboardPage() {
       icon: <PeopleAltOutlined />,
     },
   ];
+
+  if (contextLoading) {
+    return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Loading...</div>;
+  }
+
+  if (onboardingStatus === 'UNDER_REVIEW' || onboardingStatus === 'pending') {
+    return (
+      <>
+        <style>{`
+          .business-sidebar { display: none !important; }
+          .business-topbar { display: none !important; }
+          .business-main-wrapper { margin-left: 0 !important; width: 100vw !important; max-width: 100% !important; }
+          .business-content { padding: 0 !important; max-width: 100% !important; }
+          body, html { margin: 0; padding: 0; background: #fbfbfc; }
+        `}</style>
+        <div className="under-review-screen-v2">
+        <div className="ur-left">
+          <div className="ur-illustration">
+            <div className="ur-blob"></div>
+            <div className="ur-clipboard-box">
+              <div className="ur-clip"></div>
+              <PersonOutlineOutlined className="ur-avatar-icon" />
+              <div className="ur-line"></div>
+              <div className="ur-line"></div>
+              <div className="ur-line short"></div>
+            </div>
+            <div className="ur-clock-box">
+              <AccessTimeFilled className="ur-clock-icon" />
+            </div>
+            <div className="ur-star star-1">✦</div>
+            <div className="ur-star star-2">✦</div>
+            <div className="ur-star star-3">✦</div>
+          </div>
+          <h1 className="ur-title">Your account is under review</h1>
+          <p className="ur-text">
+            Thank you for completing your registration! Our team is currently reviewing your details. 
+            This process usually takes 24-48 hours. We will notify you via email once your account is activated.
+          </p>
+        </div>
+      </div>
+      </>
+    );
+  }
 
   return (
     <div className="dashboard-container">
@@ -113,36 +167,6 @@ export default function BusinessDashboardPage() {
           </div>
         </div>
 
-        <div className="dashboard-card">
-          <div className="card-header">
-            <h3 className="card-title">Store Setup Checklist</h3>
-            <Link href="/business/onboarding" className="card-link">
-              Continue Setup →
-            </Link>
-          </div>
-          <div className="checklist-list">
-            <div className="checklist-item">
-              <span className="checklist-bullet completed">✓</span>
-              <span>Register Seller Account</span>
-            </div>
-            <Link href="/business/onboarding" className="checklist-item" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <span className="checklist-bullet" style={{ background: '#ff8c00', color: '#fff' }}>1</span>
-              <span style={{ fontWeight: 600, color: '#ff8c00' }}>Complete Your Profile (Business & GST) →</span>
-            </Link>
-            <div className="checklist-item">
-              <span className="checklist-bullet">2</span>
-              <span>Set Up Shipping & Pickup Address</span>
-            </div>
-            <div className="checklist-item">
-              <span className="checklist-bullet">3</span>
-              <span>Verify Bank Details for Payouts</span>
-            </div>
-            <div className="checklist-item">
-              <span className="checklist-bullet">4</span>
-              <span>Add Your First Product Listing</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

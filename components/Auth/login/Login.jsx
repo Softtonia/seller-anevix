@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   EmailOutlined,
   PersonOutlined,
@@ -19,18 +19,12 @@ import './Login.css';
 
 export default function Login() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Role: 'business'
-  const [role, setRole] = useState('business');
+  const role = 'business'; // Hardcoded for seller portal
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    setRole('business');
-  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,14 +82,7 @@ export default function Login() {
       }
 
       // Redirect
-      const redirectUrl = searchParams.get('redirect');
-      if (redirectUrl) {
-        router.push(redirectUrl);
-      } else if (role === 'business') {
-        router.push('/business/dashboard');
-      } else {
-        router.push('/');
-      }
+      router.push('/business/dashboard');
     } catch (err) {
       const msg = err.message || 'Login failed. Please check your credentials.';
       toast.error(msg);
@@ -108,20 +95,16 @@ export default function Login() {
     <div className="auth-page auth-login-page">
       <div className="auth-card">
         <div className="auth-form-section">
-          <h1 className="Poppins-bold">
-            {role === 'business' ? 'Business Login' : 'Login to your account ...'}
-          </h1>
+          <h1 className="Poppins-bold">Business Login</h1>
           <p className="auth-subtitle">
-            {role === 'business'
-              ? 'Please enter your business email and password to manage your seller store.'
-              : 'Please enter your email address and password to login to your account.'}
+            Please enter your business email and password to manage your seller store.
           </p>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <FormElement
               name="email"
               type="email"
-              placeholder={role === 'business' ? 'Enter Business Email' : 'Enter Your Email Address'}
+              placeholder="Enter Business Email"
               value={form.email}
               onChange={handleChange}
               error={errors.email}
@@ -145,7 +128,7 @@ export default function Login() {
 
             <div className="auth-actions-row">
               <Link
-                href={role === 'business' ? '/forgot-password?role=business' : '/forgot-password'}
+                href="/forgot-password"
                 className="auth-forgot Poppins-regular"
               >
                 Forgot Password?

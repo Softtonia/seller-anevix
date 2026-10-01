@@ -20,6 +20,7 @@ import {
   AssignmentTurnedInOutlined,
 } from '@mui/icons-material';
 import { authApi } from '@/api/services/auth.service';
+import { SellerProvider } from '@/contexts/SellerContext';
 import './BusinessSidebar.css';
 
 export default function BusinessLayout({ children }) {
@@ -42,12 +43,11 @@ export default function BusinessLayout({ children }) {
 
   const handleLogout = async () => {
     await authApi.logout();
-    router.push('/signin?role=business');
+    router.push('/signin');
   };
 
   const navItems = [
     { label: 'Dashboard', path: '/business/dashboard', icon: <DashboardOutlined className="sidebar-nav-icon" /> },
-    { label: 'Store Onboarding', path: '/business/onboarding', icon: <AssignmentTurnedInOutlined className="sidebar-nav-icon" /> },
     { label: 'My Products', path: '/business/products', icon: <Inventory2Outlined className="sidebar-nav-icon" /> },
     { label: 'Inventory', path: '/business/inventory', icon: <AssignmentTurnedInOutlined className="sidebar-nav-icon" /> },
     { label: 'Orders & Shipments', path: '/business/orders', icon: <ShoppingCartOutlined className="sidebar-nav-icon" /> },
@@ -63,14 +63,17 @@ export default function BusinessLayout({ children }) {
 
   if (pathname === '/business/onboarding') {
     return (
-      <div style={{ minHeight: '100vh', width: '100vw', margin: 0, padding: 0, backgroundColor: '#f8fafc', overflowX: 'hidden', fontFamily: '"Inter", "Segoe UI", sans-serif' }}>
-        {children}
-      </div>
+      <SellerProvider>
+        <div style={{ minHeight: '100vh', width: '100vw', margin: 0, padding: 0, backgroundColor: '#f8fafc', overflowX: 'hidden', fontFamily: '"Inter", "Segoe UI", sans-serif' }}>
+          {children}
+        </div>
+      </SellerProvider>
     );
   }
 
   return (
-    <div className="business-layout">
+    <SellerProvider>
+      <div className="business-layout">
       {/* Sidebar */}
       <aside className={`business-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
@@ -159,10 +162,11 @@ export default function BusinessLayout({ children }) {
           </div>
         </header>
 
-        <div className="business-content">
-          {children}
+          <div className="business-content">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </SellerProvider>
   );
 }

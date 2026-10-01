@@ -34,11 +34,13 @@ export const API_ENDPOINTS = {
   },
   // Seller Endpoints
   SELLER: {
-    ONBOARDING_STEP1: '/seller/onboarding/step1',
+    ONBOARDING_STEP1: '/business/onboarding/step1',
     ONBOARDING: {
       PAN: '/business/onboarding/pan',
       GSTIN: '/business/onboarding/gstin',
       BANK: '/business/onboarding/bank',
+      REGISTER_COMPLETE: '/business/onboarding/register-complete',
+      PROFILE: '/users/profile',
     }
   },
   // Roles

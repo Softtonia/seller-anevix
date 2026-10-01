@@ -283,7 +283,7 @@ const Header = () => {
                 {navItems.map(item => (
                   <li key={item}>
                     <a
-                      href={item === 'Sell' ? '/signup?role=business' : '#'}
+                      href={item === 'Sell' ? '/signup' : '#'}
                       className="navItem Poppins-regular category-navitem"
                     >
                       {item}
@@ -337,7 +337,7 @@ const Header = () => {
                   onClick={() => {
                     setSidebarOpen(false);
                     if (item === 'Sell') {
-                      router.push('/signup?role=business');
+                      router.push('/signup');
                     }
                   }}
                 >

@@ -23,6 +23,29 @@ export default function SellerOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  // Load saved progress from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedStep = localStorage.getItem('onboardingStep');
+      if (savedStep) {
+        setCurrentStep(parseInt(savedStep, 10));
+      }
+      const savedData = localStorage.getItem('onboardingData');
+      if (savedData) {
+        setFormData(prev => ({ ...prev, ...JSON.parse(savedData) }));
+      }
+    } catch (e) {
+      console.warn("Failed to load onboarding progress from localStorage", e);
+    }
+  }, []);
+
+  // Save progress on change
+  useEffect(() => {
+    try {
+      localStorage.setItem('onboardingStep', currentStep.toString());
+    } catch (e) {}
+  }, [currentStep]);
+
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Profile & Business
@@ -53,7 +76,9 @@ export default function SellerOnboardingPage() {
     bankName: 'State Bank of India',
     accountNumber: '',
     ifscCode: '',
+    bankDocument: null,
     isBankPending: false,
+    isBankVerified: false,
   });
 
   useEffect(() => {
@@ -88,9 +113,22 @@ export default function SellerOnboardingPage() {
     fetchProfile();
   }, []);
 
+  // Save progress on form data change
+  useEffect(() => {
+    try {
+      const dataToSave = { ...formData };
+      delete dataToSave.bankDocument; // Don't try to stringify File objects
+      localStorage.setItem('onboardingData', JSON.stringify(dataToSave));
+    } catch (e) {}
+  }, [formData]);
+
   const handleRootChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'bankDocument') {
+      setFormData((prev) => ({ ...prev, [name]: e.target.files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleVerifyPan = async (e) => {
@@ -135,6 +173,28 @@ export default function SellerOnboardingPage() {
     }
   };
 
+  const handleVerifyBank = async (e) => {
+    e.preventDefault();
+    if (!formData.accountNumber.trim() || !formData.ifscCode.trim() || !formData.accountHolderName.trim()) {
+      toast.error('All bank account fields are required.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sellerApi.verifyBank({
+        accountNumber: formData.accountNumber,
+        ifscCode: formData.ifscCode.toUpperCase(),
+        accountHolderName: formData.accountHolderName,
+      });
+      toast.success('Bank Account Verification successful!');
+      setFormData(prev => ({ ...prev, isBankVerified: true, isBankPending: false }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Bank Account Verification failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNextStep = async (e) => {
     e.preventDefault();
 
@@ -143,8 +203,35 @@ export default function SellerOnboardingPage() {
         toast.error('Please fill in all required personal and business information.');
         return;
       }
-      // Allow proceeding to next step
-      setCurrentStep(2);
+      
+      setLoading(true);
+      try {
+        await sellerApi.submitStep1({
+          personalInfo: {
+            fullName: formData.fullName,
+            mobile: formData.mobileNumber,
+            email: formData.emailAddress,
+            dateOfBirth: formData.dob || undefined
+          },
+          businessInfo: {
+            businessName: formData.companyName,
+            businessType: formData.businessType,
+            sellerType: formData.sellerType,
+            businessAddress: {
+              street: formData.street,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.pinCode,
+              country: "India"
+            }
+          }
+        });
+        setCurrentStep(2);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to save Step 1 details.');
+      } finally {
+        setLoading(false);
+      }
     } else if (currentStep === 2) {
       if (!formData.isPanVerified) {
         toast.error('Please verify your PAN before continuing.');
@@ -158,28 +245,55 @@ export default function SellerOnboardingPage() {
       }
       setCurrentStep(4);
     } else if (currentStep === 4) {
-      if (!formData.accountNumber.trim() || !formData.ifscCode.trim() || !formData.accountHolderName.trim()) {
-        toast.error('All bank account fields are required.');
+      if (!formData.isBankVerified) {
+        toast.error('Please verify your bank account before submitting.');
         return;
       }
+      
       setLoading(true);
       try {
-        await sellerApi.verifyBank({
-          accountNumber: formData.accountNumber,
-          ifscCode: formData.ifscCode.toUpperCase(),
-          accountHolderName: formData.accountHolderName,
-        });
-        
-        setFormData(prev => ({ ...prev, isBankPending: true }));
+        const submissionPayload = {
+          personalInfo: {
+            fullName: formData.fullName,
+            mobile: formData.mobileNumber,
+            email: formData.emailAddress,
+            dateOfBirth: formData.dob || undefined,
+            pan: formData.panNumber // Required by backend schema
+          },
+          businessInfo: {
+            businessName: formData.companyName, // Must be 'businessName'
+            businessType: formData.businessType,
+            sellerType: formData.sellerType,
+            gstin: formData.gstinNumber, // <-- Added GSTIN here
+            businessAddress: {
+              street: formData.street,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.pinCode,
+              country: "India"
+            }
+          },
+          bankingInfo: {
+            accountHolderName: formData.accountHolderName,
+            bankName: formData.bankName,
+            accountNumber: formData.accountNumber,
+            ifsc: formData.ifscCode // Must be 'ifsc'
+          }
+        };
+
+        // Note: We are using a standard JSON post here. Make sure sellerApi.registerComplete does NOT set Content-Type to multipart/form-data.
+        await sellerApi.registerComplete(submissionPayload);
         
         try {
           localStorage.setItem('sellerOnboardingCompleted', 'true');
+          localStorage.removeItem('onboardingStep');
+          localStorage.removeItem('onboardingData');
         } catch (e) {}
         
-        toast.success('🎉 Registration submitted successfully!');
+        toast.success('🎉 Registration submitted successfully! Your account is now under review.');
         router.push('/business/dashboard');
       } catch (err) {
-        toast.error(err.response?.data?.message || 'Bank Account Verification failed.');
+        toast.error(err.response?.data?.message || 'Final Submission failed.');
       } finally {
         setLoading(false);
       }
@@ -322,8 +436,8 @@ export default function SellerOnboardingPage() {
                     </select>
                   </div>
                   <div className="form-field">
-                    <label>PIN Code <span className="required">*</span></label>
-                    <input type="text" name="pinCode" placeholder="e.g. 560001" value={formData.pinCode} onChange={handleRootChange} required />
+                    <label>PIN Code (6 digits) <span className="required">*</span></label>
+                    <input type="text" name="pinCode" placeholder="e.g. 560001" maxLength={6} pattern="\d{6}" title="Please enter a valid 6-digit PIN code" value={formData.pinCode} onChange={handleRootChange} required />
                   </div>
                 </div>
               </>
@@ -451,6 +565,10 @@ export default function SellerOnboardingPage() {
                     </div>
                     <div className="verified-details-grid">
                       <div className="verified-detail-item">
+                        <span className="label">GSTIN Number</span>
+                        <span className="value">{formData.gstinNumber.toUpperCase()}</span>
+                      </div>
+                      <div className="verified-detail-item">
                         <span className="label">Legal Name</span>
                         <span className="value">Anevix Traders</span>
                       </div>
@@ -513,17 +631,30 @@ export default function SellerOnboardingPage() {
                   <div className="form-field">
                     <label>Cancelled Cheque / Bank Document <span className="required">*</span></label>
                     <div className="file-upload-box">
-                      <FileUploadOutlined className="upload-icon" />
-                      <span className="upload-text">Click to upload or drag and drop</span>
-                      <span className="upload-subtext">PDF, JPG, PNG (Max 5MB)</span>
+                      <input type="file" id="bankDocument" name="bankDocument" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleRootChange} />
+                      <label htmlFor="bankDocument" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', width: '100%', margin: 0 }}>
+                        <FileUploadOutlined className="upload-icon" />
+                        <span className="upload-text">
+                          {formData.bankDocument ? formData.bankDocument.name : 'Click to upload or drag and drop'}
+                        </span>
+                        <span className="upload-subtext">PDF, JPG, PNG (Max 5MB)</span>
+                      </label>
                     </div>
                   </div>
                 </div>
 
-                {formData.isBankPending && (
-                  <div className="verified-card pending">
+                {!formData.isBankVerified && (
+                  <div style={{ marginTop: '24px' }}>
+                    <button type="button" className="btn-verify" onClick={handleVerifyBank} disabled={loading}>
+                      Verify Bank Account
+                    </button>
+                  </div>
+                )}
+
+                {formData.isBankVerified && (
+                  <div className="verified-card">
                     <div className="verified-card-header">
-                      <DescriptionOutlined fontSize="small" /> Bank Account: Pending
+                      <CheckCircle fontSize="small" /> Bank Account Verified
                     </div>
                     <div className="verified-details-grid">
                       <div className="verified-detail-item">
@@ -536,11 +667,11 @@ export default function SellerOnboardingPage() {
                       </div>
                       <div className="verified-detail-item">
                         <span className="label">Account Number</span>
-                        <span className="value">*******{formData.accountNumber.slice(-4)}</span>
+                        <span className="value">*******{formData.accountNumber.slice(-4) || '****'}</span>
                       </div>
                       <div className="verified-detail-item">
-                        <span className="label">Verification Date</span>
-                        <span className="value">-</span>
+                        <span className="label">IFSC</span>
+                        <span className="value">{formData.ifscCode}</span>
                       </div>
                     </div>
                   </div>

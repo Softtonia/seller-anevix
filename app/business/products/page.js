@@ -76,7 +76,7 @@ export default function ProductListingPage() {
     const fetchSellerProducts = async () => {
       try {
         setLoading(true);
-        const profileRes = await apiClient.get("/seller/onboarding/profile");
+        const profileRes = await apiClient.get("/users/profile");
         const sellerId =
           profileRes.data?.profile?.b2cProfileId ||
           profileRes.data?.b2cProfile?._id ||

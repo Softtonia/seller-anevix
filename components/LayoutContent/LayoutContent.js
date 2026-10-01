@@ -7,8 +7,9 @@ import Footer from '@/components/Footer/Footer';
 export default function LayoutContent({ children }) {
   const pathname = usePathname();
   const isBusinessRoute = pathname?.startsWith('/business');
+  const isAuthRoute = pathname === '/signin' || pathname === '/signup';
 
-  if (isBusinessRoute) {
+  if (isBusinessRoute || isAuthRoute) {
     return <main>{children}</main>;
   }
 

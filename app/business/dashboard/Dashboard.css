@@ -249,3 +249,267 @@
     gap: 16px;
   }
 }
+
+/* Under Review Screen V2 */
+.under-review-screen-v2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  min-height: calc(100vh - 120px);
+  background: #fbfbfc;
+}
+
+.ur-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.ur-illustration {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ur-blob {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #fff0e0;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  z-index: 1;
+}
+
+.ur-clipboard-box {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  border: 4px solid #ff9800;
+  border-radius: 12px;
+  width: 120px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+  box-shadow: 0 10px 25px rgba(255, 152, 0, 0.15);
+}
+
+.ur-clip {
+  position: absolute;
+  top: -10px;
+  width: 40px;
+  height: 16px;
+  background: #ff9800;
+  border-radius: 8px;
+}
+
+.ur-avatar-icon {
+  font-size: 40px !important;
+  color: #ff9800;
+  margin-bottom: 12px;
+}
+
+.ur-line {
+  width: 60%;
+  height: 4px;
+  background: #ffddb3;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.ur-line.short {
+  width: 40%;
+}
+
+.ur-clock-box {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  z-index: 3;
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.ur-clock-icon {
+  font-size: 56px !important;
+  color: #f97316;
+}
+
+.ur-star {
+  position: absolute;
+  color: #ffb74d;
+  font-size: 16px;
+  z-index: 0;
+}
+
+.star-1 { top: 20%; left: -10%; font-size: 20px; }
+.star-2 { top: 10%; right: 10%; font-size: 14px; }
+.star-3 { bottom: 20%; left: 0; }
+
+.ur-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 16px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ur-text {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0;
+}
+
+.ur-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ur-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.ur-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 24px;
+}
+
+.ur-steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.ur-step-item {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.ur-step-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.ur-step-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.ur-step-icon.completed {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.ur-step-icon.pending {
+  background: #f97316;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+}
+
+.ur-step-info {
+  display: flex;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.step-num {
+  font-size: 14px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.active-review .step-num {
+  color: #f97316;
+}
+
+.step-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.step-status {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.step-status.pending-text {
+  color: #f97316;
+  font-weight: 500;
+}
+
+.ur-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ur-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.ur-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ur-value {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.active-review {
+  background: #fff7ed;
+  margin: -12px -24px 0 -24px;
+  padding: 12px 24px 24px 24px;
+  border-radius: 0 0 12px 12px;
+}
+
+@media (max-width: 900px) {
+  .under-review-screen-v2 {
+    grid-template-columns: 1fr;
+  }
+}

@@ -10,4 +10,8 @@ export const sellerApi = {
     apiClient.post(API_ENDPOINTS.SELLER.ONBOARDING.GSTIN, data),
   verifyBank: (data) =>
     apiClient.post(API_ENDPOINTS.SELLER.ONBOARDING.BANK, data),
+  registerComplete: (data) =>
+    apiClient.post(API_ENDPOINTS.SELLER.ONBOARDING.REGISTER_COMPLETE, data),
+  getOnboardingProfile: () =>
+    apiClient.get(API_ENDPOINTS.SELLER.ONBOARDING.PROFILE),
 };

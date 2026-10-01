@@ -207,7 +207,7 @@ function CatalogUploadContent() {
 
     const fetchSellerProfile = async () => {
       try {
-        const response = await apiClient.get('/seller/onboarding/profile');
+        const response = await apiClient.get('/users/profile');
         console.log('Seller Profile Response:', response.data);
         
 const fetchedId = response.data?.profile?.b2cProfileId || response.data?.b2cProfile?._id || response.data?.profile?._id || response.data?._id;

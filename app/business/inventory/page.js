@@ -34,7 +34,7 @@ export default function InventoryPage() {
   useEffect(() => {
     const fetchSellerId = async () => {
       try {
-        const profileRes = await apiClient.get('/seller/onboarding/profile');
+        const profileRes = await apiClient.get('/users/profile');
         const id = profileRes.data?.profile?.b2cProfileId || profileRes.data?.b2cProfile?._id || profileRes.data?.profile?._id || profileRes.data?._id;
         if (id) {
           setSellerId(id);
