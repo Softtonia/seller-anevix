@@ -1,0 +1,678 @@
+.paymentsWrap {
+  padding: 40px 20px 30px;
+  background: var(--white);
+  min-height: 80vh;
+}
+
+.paymentsInner {
+  padding: 0 20px;
+}
+
+.paymentsHeader {
+  margin-bottom: 35px;
+}
+
+.backBtn {
+  font-size: 48px;
+  color: var(--black);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s ease, color 0.2s ease;
+  font-weight: 700;
+}
+
+.backArrow {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+}
+
+/* Dual Column Layout */
+.paymentsLayoutGrid {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 60px;
+}
+
+.layoutColumn {
+  flex: 1;
+}
+
+/* Vertical divider between columns on desktop */
+.verticalDivider {
+  width: 1px;
+  background-color: #e0e0e0;
+  align-self: stretch;
+}
+
+/* Column Header Tabs Styling */
+.columnHeader {
+  font-size: 20px;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+  position: relative;
+  width: fit-content;
+}
+
+.underlineIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.orangeLine {
+  background-color: var(--dark-orange);
+}
+
+.pinkLine {
+  background-color: var(--vermillion);
+}
+
+/* Left Column - Transactions */
+.columnContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.txnItemCard {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 24px;
+}
+
+.txnItemCard:last-child {
+  border-bottom: none;
+}
+
+.txnDate {
+  font-size: 20px;
+  color: var(--black);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.txnDesc {
+  font-size: 20px;
+  color: var(--funky-grey);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.viewMoreBtn {
+  color: var(--dark-orange);
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 20px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.viewMoreBtn:hover {
+  color: var(--dark-orange-hover);
+  text-decoration: underline;
+}
+
+/* Right Column - Saved Payment Methods */
+.subSectionTitle {
+  font-size: 20px;
+  color: var(--black);
+  margin-bottom: 20px;
+}
+
+.paymentTypeLabel {
+  font-size: 20px;
+  color: var(--funky-grey);
+  margin-bottom: 12px;
+}
+
+.upiList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.upiCard {
+  background-color: #f7f8f9;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #eee;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.upiCard:hover {
+  border-color: #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.upiCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.providerIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.upiDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.providerName {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+  margin: 0 0 4px 0;
+}
+
+.upiVpa {
+  font-size: 20px;
+  color: var(--funky-grey);
+  margin: 0;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--dark-orange);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.deleteBtn:hover {
+  color: var(--dark-orange-hover);
+}
+
+.emptyStateText {
+  font-size: 14px;
+  color: var(--funky-grey);
+  font-style: italic;
+  padding: 10px 0;
+}
+
+/* Add UPI Section */
+.addUpiTriggerBtn {
+  background: none;
+  border: 1px dashed var(--dark-orange);
+  color: var(--dark-orange);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.addUpiTriggerBtn:hover {
+  background-color: #fffbf7;
+  border-color: var(--dark-orange-hover);
+}
+
+.addIcon {
+  font-size: 20px;
+}
+
+.addUpiForm {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  background-color: var(--white);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formTitle {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: var(--black);
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 13px;
+  color: var(--funky-grey);
+  margin-bottom: 8px;
+}
+
+.formSelect {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: var(--white);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.formSelect:focus {
+  border-color: var(--dark-orange);
+}
+
+.inputVerifyGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.formInput {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.formInput:focus {
+  border-color: var(--dark-orange);
+}
+
+.inputError {
+  border-color: var(--vermillion) !important;
+}
+
+.verifyBtn {
+  padding: 0 24px;
+  border-radius: 8px;
+  border: 1px solid var(--dark-orange);
+  background-color: transparent;
+  color: var(--dark-orange);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+}
+
+.verifyBtn:hover:not(:disabled) {
+  background-color: var(--dark-orange);
+  color: var(--white);
+}
+
+.verifyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.verifyBtn.verified {
+  border-color: var(--traditional-green);
+  background-color: var(--traditional-green);
+  color: var(--white);
+}
+
+.errorText {
+  color: var(--vermillion);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.successText {
+  color: var(--traditional-green);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelFormBtn {
+  background: none;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--funky-grey);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelFormBtn:hover {
+  background-color: #f5f5f5;
+  color: var(--black);
+}
+
+.saveFormBtn {
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  color: var(--white);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.saveFormBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.saveFormBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner Loader for Verify button */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 140, 0, 0.2);
+  border-top-color: var(--dark-orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Modals Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalCard {
+  background-color: var(--white);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  animation: scaleUp 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 18px;
+  color: var(--black);
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  color: var(--funky-grey);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.modalCloseBtn:hover {
+  color: var(--vermillion);
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.modalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #f0f0f0;
+  font-size: 14px;
+}
+
+.modalRow:last-of-type {
+  border-bottom: none;
+}
+
+.modalLabel {
+  color: var(--funky-grey);
+}
+
+.modalVal {
+  color: var(--black);
+  text-align: right;
+}
+
+.highlightAmount {
+  color: var(--dark-orange);
+}
+
+.badgeSuccess {
+  background-color: #e8f5e9;
+  color: var(--traditional-green);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.modalMessageArea {
+  background-color: #f7f8f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: var(--funky-grey);
+  line-height: 1.6;
+}
+
+.modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  background-color: #fafafa;
+}
+
+.closeActionBtn {
+  background-color: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.closeActionBtn:hover {
+  opacity: 0.9;
+}
+
+/* Delete Confirmation Card styling */
+.deleteConfirmCard {
+  max-width: 420px;
+}
+
+.textCenter {
+  text-align: center;
+}
+
+.warningText {
+  font-size: 14px;
+  color: var(--dark-charcoal);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.flexCenter {
+  justify-content: center;
+  gap: 16px;
+}
+
+.cancelActionBtn {
+  background-color: #f1f3f4;
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cancelActionBtn:hover {
+  background-color: #e8eaed;
+}
+
+.deleteConfirmActionBtn {
+  background-color: var(--vermillion);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.deleteConfirmActionBtn:hover {
+  opacity: 0.9;
+}
+
+/* Toast styling (copied design patterns from codebase success/error states) */
+.toastContainer {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333333;
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1100;
+  animation: slideUpToast 0.3s ease-out;
+}
+
+.toastContainer.success {
+  background-color: #2e7d32;
+}
+
+.toastMessage {
+  font-size: 14px;
+}
+
+@keyframes slideUpToast {
+  from {
+    bottom: -50px;
+    opacity: 0;
+  }
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .paymentsLayoutGrid {
+    flex-direction: column;
+    gap: 48px;
+  }
+  
+  .verticalDivider {
+    display: none;
+  }
+
+  .columnHeader {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .paymentsWrap {
+    padding: 30px 15px;
+  }
+
+  .backBtn {
+    font-size: 24px;
+  }
+
+  .columnHeader {
+    font-size: 18px;
+  }
+
+  .upiCard {
+    padding: 14px 16px;
+  }
+
+  .providerName {
+    font-size: 14px;
+  }
+
+  .upiVpa {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,699 @@
+name: Deploy Anevix Next.js - Dev
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: anevix-dev-deployment
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BASE_PATH: /var/www/anevix.in
+  APP_PORT: 3200
+
+jobs:
+  deploy-dev:
+    name: Build & Deploy Anevix
+    runs-on: ubuntu-latest
+    environment: dev
+
+    if: github.ref == 'refs/heads/dev'
+
+    steps:
+      # =========================================================
+      # Checkout
+      # =========================================================
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      # =========================================================
+      # Node.js
+      # =========================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24.8.0'
+          cache: npm
+
+      # =========================================================
+      # Next.js Build Cache
+      # =========================================================
+      - name: Cache Next.js Build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-next-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-next-
+
+      # =========================================================
+      # Install Dependencies
+      # =========================================================
+      - name: Install Dependencies
+        run: |
+          set -euo pipefail
+
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm config set fetch-timeout 300000
+
+          INSTALL_SUCCESS=0
+
+          for i in 1 2 3; do
+            echo "========================================"
+            echo "Dependency install attempt: $i"
+            echo "========================================"
+
+            if [ -f package-lock.json ]; then
+
+              if npm ci \
+                --legacy-peer-deps \
+                --prefer-offline \
+                --no-audit \
+                --no-fund; then
+
+                INSTALL_SUCCESS=1
+                break
+              fi
+
+            else
+
+              if npm install \
+                --legacy-peer-deps \
+                --no-audit \
+                --no-fund; then
+
+                INSTALL_SUCCESS=1
+                break
+              fi
+
+            fi
+
+            echo "Install attempt $i failed"
+
+            if [ "$i" -lt 3 ]; then
+              sleep 15
+            fi
+          done
+
+          if [ "$INSTALL_SUCCESS" -ne 1 ]; then
+            echo "ERROR: npm dependency installation failed after 3 attempts"
+            exit 1
+          fi
+
+          echo "Dependencies installed successfully"
+
+      # =========================================================
+      # Validate required environment variables
+      # =========================================================
+      - name: Validate Build Environment
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${NEXT_PUBLIC_API_URL:-}" ]; then
+            echo "ERROR: NEXT_PUBLIC_API_URL secret is missing"
+            exit 1
+          fi
+
+          echo "Build environment validated"
+
+      # =========================================================
+      # Next.js Build
+      # =========================================================
+      - name: Build Next.js Application
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+        run: |
+          set -euo pipefail
+
+          echo "Node version:"
+          node -v
+
+          echo "npm version:"
+          npm -v
+
+          echo "Building Next.js application..."
+
+          npm run build
+
+          echo "Next.js build completed"
+
+      # =========================================================
+      # Validate Standalone Build
+      # =========================================================
+      - name: Validate Standalone Build
+        run: |
+          set -euo pipefail
+
+          if [ ! -d ".next" ]; then
+            echo "ERROR: .next directory not found"
+            exit 1
+          fi
+
+          if [ ! -d ".next/standalone" ]; then
+            echo "ERROR: .next/standalone directory not found"
+            echo ""
+            echo "Make sure next.config.js contains:"
+            echo "output: 'standalone'"
+            exit 1
+          fi
+
+          if [ ! -f ".next/standalone/server.js" ]; then
+            echo "ERROR: .next/standalone/server.js not found"
+            exit 1
+          fi
+
+          echo "Standalone build validated successfully"
+
+      # =========================================================
+      # Prepare deployment package
+      # =========================================================
+      - name: Prepare Deployment Package
+        run: |
+          set -euo pipefail
+
+          echo "Preparing standalone deployment..."
+
+          mkdir -p .next/standalone/.next
+
+          # Copy Next static assets
+          if [ -d ".next/static" ]; then
+            rm -rf .next/standalone/.next/static
+            cp -a .next/static .next/standalone/.next/static
+          else
+            echo "ERROR: .next/static directory not found"
+            exit 1
+          fi
+
+          # Copy public assets
+          if [ -d "public" ]; then
+            rm -rf .next/standalone/public
+            cp -a public .next/standalone/public
+          fi
+
+          # Verify final standalone package
+          if [ ! -f ".next/standalone/server.js" ]; then
+            echo "ERROR: server.js missing from deployment package"
+            exit 1
+          fi
+
+          echo "Deployment package prepared"
+
+          du -sh .next/standalone
+
+      # =========================================================
+      # Create archive
+      # =========================================================
+      - name: Create Deployment Archive
+        run: |
+          set -euo pipefail
+
+          rm -f next-build.tar.gz
+
+          tar -czf next-build.tar.gz \
+            -C .next/standalone .
+
+          if [ ! -f "next-build.tar.gz" ]; then
+            echo "ERROR: Deployment archive was not created"
+            exit 1
+          fi
+
+          echo "Archive created:"
+          ls -lh next-build.tar.gz
+
+      # =========================================================
+      # SSH Setup
+      # =========================================================
+      - name: Setup SSH
+        env:
+          DEV_SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_PORT: ${{ secrets.DEV_PORT }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DEV_SSH_KEY:-}" ]; then
+            echo "ERROR: DEV_SSH_KEY is missing"
+            exit 1
+          fi
+
+          if [ -z "${DEV_HOST:-}" ]; then
+            echo "ERROR: DEV_HOST is missing"
+            exit 1
+          fi
+
+          if [ -z "${DEV_USER:-}" ]; then
+            echo "ERROR: DEV_USER is missing"
+            exit 1
+          fi
+
+          SSH_PORT="${DEV_PORT:-22}"
+
+          echo "SSH_PORT=$SSH_PORT" >> "$GITHUB_ENV"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$DEV_SSH_KEY" > ~/.ssh/dev_key
+          chmod 600 ~/.ssh/dev_key
+
+          echo "Adding server to known_hosts..."
+
+          ssh-keyscan \
+            -p "$SSH_PORT" \
+            -H "$DEV_HOST" \
+            >> ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/known_hosts
+
+      # =========================================================
+      # SSH Test
+      # =========================================================
+      - name: Test SSH Connection
+        env:
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -i ~/.ssh/dev_key \
+            -p "$SSH_PORT" \
+            "$DEV_USER@$DEV_HOST" \
+            "echo 'SSH connection successful'"
+
+      # =========================================================
+      # Verify Server Runtime
+      # =========================================================
+      - name: Verify Server Runtime
+        env:
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/dev_key \
+            -p "$SSH_PORT" \
+            "$DEV_USER@$DEV_HOST" \
+            "bash -s" <<'SERVER_SCRIPT'
+
+            set -euo pipefail
+
+            export PATH="/opt/anevix-node/current/bin:/home/deploy/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            export PM2_HOME="/home/deploy/.pm2"
+
+            NODE="/opt/anevix-node/current/bin/node"
+            PM2="/home/deploy/.npm-global/bin/pm2"
+
+            if [ ! -x "$NODE" ]; then
+              echo "ERROR: Anevix Node runtime not found"
+              exit 1
+            fi
+
+            if [ ! -x "$PM2" ]; then
+              echo "ERROR: PM2 not found"
+              exit 1
+            fi
+
+            echo "Server Node:"
+            "$NODE" -v
+
+            echo "Server PM2:"
+            "$PM2" -v
+
+          SERVER_SCRIPT
+
+      # =========================================================
+      # Prepare Remote Server
+      # =========================================================
+      - name: Prepare Deployment Directory
+        env:
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/dev_key \
+            -p "$SSH_PORT" \
+            "$DEV_USER@$DEV_HOST" \
+            "mkdir -p \
+              '$BASE_PATH/releases' \
+              '$BASE_PATH/.deploy_tmp'"
+
+      # =========================================================
+      # Upload Archive
+      # =========================================================
+      - name: Upload Build Archive
+        env:
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+        run: |
+          set -euo pipefail
+
+          echo "Uploading build..."
+
+          scp \
+            -i ~/.ssh/dev_key \
+            -P "$SSH_PORT" \
+            next-build.tar.gz \
+            "$DEV_USER@$DEV_HOST:$BASE_PATH/.deploy_tmp/next-build-${GITHUB_SHA}.tar.gz"
+
+          echo "Upload completed"
+
+      # =========================================================
+      # Deploy
+      # =========================================================
+      - name: Deploy Next.js Application
+        env:
+          DEV_HOST: ${{ secrets.DEV_HOST }}
+          DEV_USER: ${{ secrets.DEV_USER }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          ssh \
+            -i ~/.ssh/dev_key \
+            -p "$SSH_PORT" \
+            "$DEV_USER@$DEV_HOST" \
+            "BASE_PATH='$BASE_PATH' APP_PORT='$APP_PORT' GIT_SHA='$GIT_SHA' bash -s" <<'SERVER_SCRIPT'
+
+            set -euo pipefail
+
+            # ---------------------------------------------------
+            # Runtime
+            # ---------------------------------------------------
+            export PATH="/opt/anevix-node/current/bin:/home/deploy/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            export PM2_HOME="/home/deploy/.pm2"
+
+            NODE="/opt/anevix-node/current/bin/node"
+            PM2="/home/deploy/.npm-global/bin/pm2"
+
+            # ---------------------------------------------------
+            # Paths
+            # ---------------------------------------------------
+            RELEASES="$BASE_PATH/releases"
+            RELEASE="$RELEASES/$GIT_SHA"
+            CURRENT="$BASE_PATH/current"
+
+            TMP_DIR="$BASE_PATH/.deploy_tmp"
+            ARCHIVE="$TMP_DIR/next-build-$GIT_SHA.tar.gz"
+
+            ECOSYSTEM="$BASE_PATH/ecosystem.config.cjs"
+
+            OLD_RELEASE=""
+
+            echo "==========================================="
+            echo "ANE VIX DEPLOYMENT"
+            echo "==========================================="
+            echo "Commit: $GIT_SHA"
+            echo "Release: $RELEASE"
+            echo "Port: $APP_PORT"
+            echo "==========================================="
+
+            # ---------------------------------------------------
+            # Runtime validation
+            # ---------------------------------------------------
+            if [ ! -x "$NODE" ]; then
+              echo "ERROR: Node runtime missing"
+              exit 1
+            fi
+
+            if [ ! -x "$PM2" ]; then
+              echo "ERROR: PM2 missing"
+              exit 1
+            fi
+
+            if [ ! -f "$ECOSYSTEM" ]; then
+              echo "ERROR: ecosystem.config.cjs missing"
+              exit 1
+            fi
+
+            if [ ! -f "$ARCHIVE" ]; then
+              echo "ERROR: Uploaded archive missing"
+              exit 1
+            fi
+
+            echo "Node version:"
+            "$NODE" -v
+
+            echo "PM2 version:"
+            "$PM2" -v
+
+            # ---------------------------------------------------
+            # Store previous release for rollback
+            # ---------------------------------------------------
+            if [ -L "$CURRENT" ]; then
+              OLD_RELEASE="$(readlink -f "$CURRENT" || true)"
+
+              echo "Previous release:"
+              echo "$OLD_RELEASE"
+            fi
+
+            # ---------------------------------------------------
+            # Create release
+            # ---------------------------------------------------
+            rm -rf "$RELEASE"
+
+            mkdir -p "$RELEASE"
+
+            echo "Extracting release..."
+
+            tar -xzf "$ARCHIVE" \
+              -C "$RELEASE"
+
+            # ---------------------------------------------------
+            # Validate release
+            # ---------------------------------------------------
+            if [ ! -f "$RELEASE/server.js" ]; then
+              echo "ERROR: server.js missing inside release"
+
+              rm -rf "$RELEASE"
+
+              exit 1
+            fi
+
+            echo "$GIT_SHA" \
+              > "$RELEASE/deploy-version.txt"
+
+            date -u +"%Y-%m-%dT%H:%M:%SZ" \
+              > "$RELEASE/deployed-at.txt"
+
+            chmod -R \
+              u=rwX,g=rX,o=rX \
+              "$RELEASE"
+
+            # ---------------------------------------------------
+            # Atomic symlink switch
+            # ---------------------------------------------------
+            echo "Activating new release..."
+
+            ln -sfn \
+              "$RELEASE" \
+              "$CURRENT"
+
+            # ---------------------------------------------------
+            # PM2 start/reload
+            # ---------------------------------------------------
+            echo "Starting Anevix with PM2..."
+
+            if "$PM2" describe anevix-frontend >/dev/null 2>&1; then
+
+              "$PM2" reload \
+                "$ECOSYSTEM" \
+                --only anevix-frontend \
+                --update-env
+
+            else
+
+              "$PM2" start \
+                "$ECOSYSTEM" \
+                --only anevix-frontend
+
+            fi
+
+            # ---------------------------------------------------
+            # Local health check
+            # ---------------------------------------------------
+            echo "Waiting for Next.js on port $APP_PORT..."
+
+            APP_OK=0
+
+            for i in $(seq 1 15); do
+
+              echo "Health check attempt $i/15"
+
+              if curl \
+                --fail \
+                --silent \
+                --show-error \
+                --connect-timeout 3 \
+                --max-time 10 \
+                "http://127.0.0.1:$APP_PORT/" \
+                >/dev/null; then
+
+                APP_OK=1
+
+                echo "Local health check passed"
+
+                break
+              fi
+
+              sleep 2
+            done
+
+            # ---------------------------------------------------
+            # Rollback
+            # ---------------------------------------------------
+            if [ "$APP_OK" -ne 1 ]; then
+
+              echo "==========================================="
+              echo "ERROR: NEW RELEASE FAILED HEALTH CHECK"
+              echo "==========================================="
+
+              "$PM2" logs \
+                anevix-frontend \
+                --lines 100 \
+                --nostream || true
+
+              if [ -n "$OLD_RELEASE" ] && [ -d "$OLD_RELEASE" ]; then
+
+                echo "Rolling back to:"
+                echo "$OLD_RELEASE"
+
+                ln -sfn \
+                  "$OLD_RELEASE" \
+                  "$CURRENT"
+
+                "$PM2" restart \
+                  anevix-frontend \
+                  --update-env || true
+
+                sleep 3
+
+                if curl \
+                  --fail \
+                  --silent \
+                  --connect-timeout 3 \
+                  "http://127.0.0.1:$APP_PORT/" \
+                  >/dev/null; then
+
+                  echo "Rollback successful"
+
+                else
+
+                  echo "WARNING: Rollback health check also failed"
+
+                fi
+
+              else
+
+                echo "No previous release available for rollback"
+
+              fi
+
+              rm -f "$ARCHIVE"
+
+              exit 1
+            fi
+
+            # ---------------------------------------------------
+            # Successful deployment
+            # ---------------------------------------------------
+            echo "Saving PM2 process list..."
+
+            "$PM2" save
+
+            # ---------------------------------------------------
+            # Remove uploaded archive
+            # ---------------------------------------------------
+            rm -f "$ARCHIVE"
+
+            # ---------------------------------------------------
+            # Clean stale deployment archives
+            # ---------------------------------------------------
+            find "$TMP_DIR" \
+              -type f \
+              -name 'next-build-*.tar.gz' \
+              -mtime +1 \
+              -delete 2>/dev/null || true
+
+            # ---------------------------------------------------
+            # Keep latest 5 releases
+            # ---------------------------------------------------
+            echo "Cleaning old releases..."
+
+            cd "$RELEASES"
+
+            ls -1dt */ 2>/dev/null \
+              | tail -n +6 \
+              | xargs -r rm -rf || true
+
+            echo "==========================================="
+            echo "DEPLOYMENT SUCCESSFUL"
+            echo "==========================================="
+
+            "$PM2" status
+
+          SERVER_SCRIPT
+
+      # =========================================================
+      # Public Health Check
+      # =========================================================
+      - name: Verify Public Website
+        run: |
+          set -euo pipefail
+
+          echo "Checking https://anevix.in"
+
+          WEBSITE_OK=0
+
+          for i in 1 2 3 4 5; do
+
+            echo "Public health check attempt $i/5"
+
+            HTTP_CODE=$(curl \
+              -L \
+              --connect-timeout 10 \
+              --max-time 30 \
+              -s \
+              -o /dev/null \
+              -w "%{http_code}" \
+              https://anevix.in || true)
+
+            echo "HTTP Status: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ] || \
+               [ "$HTTP_CODE" = "301" ] || \
+               [ "$HTTP_CODE" = "302" ] || \
+               [ "$HTTP_CODE" = "307" ] || \
+               [ "$HTTP_CODE" = "308" ]; then
+
+              WEBSITE_OK=1
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$WEBSITE_OK" -ne 1 ]; then
+            echo "ERROR: Public website health check failed"
+            exit 1
+          fi
+
+          echo "==========================================="
+          echo "Anevix deployed successfully"
+          echo "https://anevix.in"
+          echo "==========================================="

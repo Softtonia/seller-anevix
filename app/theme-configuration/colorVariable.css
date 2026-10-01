@@ -1,0 +1,22 @@
+:root {
+  --primary-gradient:linear-gradient(93.15deg, #FF8C00 0%, #FFA500 100%);
+  --bg-light: #f5f7fb;
+  --text-dark: #1a1a2e;
+  --text-muted: #6c757d;
+  --white: #ffffff;
+  --vermillion : #E53935;
+  --btn-accent-gradient : linear-gradient(93.15deg, #2E7D32 0%, #66BB6A 100%);
+  --ternary-gradient : linear-gradient(93.15deg, #1E88E5 0%, #42A5F5 100%);
+  --bg-white:#FFFFFF;
+  --funky-grey: #777777;
+  --dark-charcoal:#333333;
+  --alizarian:#D32F2F;
+  --neon-gold:#FBC02D;
+  --neon-aqua-blue : #29B6F6;
+  --traditional-green : #4CAF50;
+  --dark-orange : #FF8C00;
+  --dark-orange-hover: #E38800;
+  --black : #000000;
+  --bayside-blue:#1E88E5;
+  --dark-green:#2E7D32
+}

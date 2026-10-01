@@ -1,0 +1,120 @@
+.forgot-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 24px;
+  background-color: var(--bg-light);
+}
+
+.forgot-card {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border-radius: 24px;
+  max-width: 1100px;
+  width: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.forgot-form-section {
+  flex: 1 1 50%;
+  padding: 40px 44px;
+}
+
+.forgot-hero {
+  flex: 1 1 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 360px;
+}
+
+.forgot-form-section h1 {
+  margin: 0 0 12px;
+  color: var(--black);
+}
+
+.forgot-subtitle {
+  margin: 12px 0 24px;
+  color: var(--funky-grey);
+  max-width: 420px;
+}
+
+.forgot-actions {
+  margin-top: 8px;
+
+}
+.auth-forgot{
+    color:var(--dark-orange);
+    display:block
+}
+.reset-password-form{
+    display:flex;
+    flex-direction:column;
+    gap:16px
+}
+
+@media (max-width: 1024px) {
+  .forgot-page {
+    padding: 40px 24px;
+  }
+
+  .forgot-card {
+    flex-direction: column;
+    max-width: 560px;
+    width: 100%;
+    padding: 32px 24px;
+    gap: 0;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+  }
+
+  .forgot-hero {
+    display: none;
+  }
+
+  .forgot-form-section {
+    padding: 0;
+    width: 100%;
+  }
+
+  .forgot-form-section h1 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .forgot-subtitle {
+    margin: 0 auto 28px;
+    text-align: center;
+    font-size: 15px;
+    max-width: 100%;
+    width: calc(100% - 20px);
+  }
+
+  .auth-form {
+    gap: 16px;
+  }
+
+  .forgot-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .auth-forgot {
+    margin: 0;
+    text-align: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .forgot-card {
+    flex-direction: column;
+  }
+  .forgot-hero {
+    min-height: 240px;
+  }
+}

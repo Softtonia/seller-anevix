@@ -1,0 +1,312 @@
+.form-element-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  font-size: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #333;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: var(--dark-orange);
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+}
+
+.form-input.form-input-error {
+  border-color: #ef4444 !important;
+  background-color: #fffafb;
+}
+
+.form-input.form-input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.form-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.form-icon svg {
+  font-size: 20px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--dark-orange);
+}
+
+.password-toggle-btn svg {
+  font-size: 20px;
+}
+
+.form-error-msg {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 5px;
+  margin-left: 4px;
+  display: block;
+}
+
+.form-element-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--dark-charcoal, #333333);
+}
+
+/* Searchable Select styles */
+.searchable-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.searchable-select-arrow-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  z-index: 2;
+}
+
+.searchable-select-arrow-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--dark-orange);
+}
+
+.searchable-select-arrow-icon {
+  transition: transform 0.2s ease;
+}
+
+.searchable-select-arrow-icon.open {
+  transform: rotate(180deg);
+}
+
+.searchable-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.searchable-select-options {
+  overflow-y: auto;
+  max-height: 200px;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+}
+
+.searchable-select-option {
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  color: #333333;
+}
+
+.searchable-select-option:hover {
+  background-color: #f1f5f9;
+}
+
+.searchable-select-option.selected {
+  background-color: rgba(255, 140, 0, 0.08);
+  color: var(--dark-orange, #ff8c00);
+  font-weight: 600;
+}
+
+.searchable-select-no-results {
+  padding: 16px;
+  text-align: center;
+  color: var(--funky-grey, #a0aec0);
+  font-size: 13px;
+}
+
+/* Reusable Checkbox Styles */
+.form-checkbox-wrapper {
+  margin: 4px 0;
+}
+
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--dark-charcoal, #333333);
+  user-select: none;
+}
+
+.form-checkbox-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  border: 2px solid #000000;
+  border-radius: 4px;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  margin: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.form-checkbox-input::before {
+  content: '';
+  width: 5px;
+  height: 10px;
+  border: solid #000000;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.15s ease;
+  margin-top: -2px;
+  box-sizing: border-box;
+}
+
+.form-checkbox-input:checked::before {
+  transform: rotate(45deg) scale(1);
+}
+
+.form-checkbox-input:checked {
+  border-color: #000000;
+}
+
+.checkbox-text {
+  font-size: 14px;
+}
+
+/* Reusable Radio Styles */
+.form-radio-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.form-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-radio-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  border: 2px solid #000000;
+  border-radius: 50%;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  margin: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.form-radio-input::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #000000;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.form-radio-input:checked::before {
+  transform: scale(1);
+}
+
+.form-radio-input:checked {
+  border-color: #000000;
+}
+
+.radio-text {
+  font-size: 14px;
+  color: var(--dark-charcoal, #333333);
+}

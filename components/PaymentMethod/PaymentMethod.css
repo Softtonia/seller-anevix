@@ -1,0 +1,621 @@
+/* ==========================================================
+   DESKTOP DEFAULT LAYOUT STYLES (Original Desktop View)
+   ========================================================== */
+.desktopPaymentLayout {
+  display: block;
+}
+
+.tabletPaymentLayout {
+  display: none;
+}
+
+.paymentWrap {
+  padding: 32px 20px 30px;
+  background: var(--white);
+  min-height: 100vh;
+}
+
+.paymentHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.paymentHeader h1 {
+  margin: 0;
+}
+.backBtn {
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 6px 10px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  color: var(--dark-charcoal);
+}
+.backBtn:hover {
+  opacity: 0.7;
+}
+
+.paymentLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.paymentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.totalAmount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-light);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 16px;
+}
+.totalAmount .amount {
+  color: var(--dark-charcoal);
+}
+
+.paymentMethods {
+  background: var(--white);
+  border: 1px solid var(--bg-light);
+  padding: 20px;
+  border-radius: 6px;
+}
+.sectionLabel {
+  margin: 0 0 16px;
+  color: var(--funky-grey);
+  letter-spacing: 0.1em;
+}
+
+.methodsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.methodCard {
+  border: 1px solid var(--funky-grey);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+.methodCard.active {
+  border-color: var(--dark-orange);
+  box-shadow: 0 0 0 1px var(--dark-orange), 0 4px 12px rgba(255, 122, 0, 0.08);
+}
+
+.methodHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--white);
+  border: 0;
+  cursor: pointer;
+  transition: background 200ms ease;
+}
+.methodHeader:hover {
+  background: var(--bg-light);
+}
+
+.methodLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  text-align: left;
+}
+.methodIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.methodInfo {
+  flex: 1;
+}
+.methodName {
+  margin: 0;
+  color: var(--dark-charcoal);
+}
+.methodDesc {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--funky-grey);
+}
+
+.expandIcon {
+  font-size: 16px;
+  color: var(--funky-grey);
+  transition: transform 200ms ease;
+}
+.expandIcon.open {
+  transform: rotate(-180deg);
+}
+
+.giftCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--bg-light);
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.giftIcon {
+  font-size: 20px;
+}
+.applyLink {
+  margin-left: auto;
+  color: var(--dark-orange);
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+.applyLink:hover {
+  text-decoration: underline;
+}
+
+.weAccept {
+  background: var(--white);
+  border: 1px solid var(--bg-light);
+  padding: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.weAccept h4 {
+  margin: 0 0 12px;
+  color: var(--dark-charcoal);
+}
+.cardLogos {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.cardLogos img {
+  height: 40px;
+  width: 60px;
+  object-fit: contain;
+}
+
+.placeOrderBtn {
+  width: 100%;
+  background: var(--dark-orange);
+  color: var(--white);
+  padding: 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  font-size: 16px;
+  transition: filter 0.2s ease;
+}
+.placeOrderBtn:hover {
+  filter: brightness(0.95);
+}
+
+.terms {
+  font-size: 13px;
+  color: var(--funky-grey);
+  text-align: center;
+  margin: 12px 0 0;
+}
+.terms a {
+  color: var(--dark-orange);
+  text-decoration: none;
+}
+.terms a:hover {
+  text-decoration: underline;
+}
+
+
+/* ==========================================================
+   TABLET/IPAD VIEWPORT REDESIGN LAYOUT STYLES
+   ========================================================== */
+.checkoutPaymentWrap {
+  padding: 40px 20px 0;
+  background: var(--white);
+  min-height: 100vh;
+}
+
+.checkoutPaymentInner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.checkoutPaymentHeader {
+  margin-bottom: 20px;
+}
+
+.checkoutPaymentHeader .backBtn {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--black);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.checkoutPaymentHeader .backBtn:hover {
+  color: var(--dark-orange);
+  transform: translateX(-4px);
+}
+
+.checkoutPaymentHeader .backArrow {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: bold;
+}
+
+.headerDivider {
+  border: none;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin-bottom: 35px;
+  margin-top: 0;
+}
+
+.paymentLayoutContainer {
+  max-width: 850px;
+  width: 100%;
+  margin: 0 auto 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.paymentCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px 32px;
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.cardLabel {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--black);
+  margin: 0 0 16px;
+}
+
+.cardDivider {
+  border: none;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin-bottom: 24px;
+  margin-top: 0;
+}
+
+.paymentRadiosList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.radioOptionRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.radioInputLabel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+}
+
+.radioInputLabel input {
+  display: none;
+}
+
+.radioInputCustom {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--funky-grey);
+  display: inline-block;
+  position: relative;
+  transition: border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radioInputLabel input:checked + .radioInputCustom {
+  border-color: var(--dark-orange);
+}
+
+.radioInputLabel input:checked + .radioInputCustom::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  background: var(--dark-orange);
+  border-radius: 50%;
+}
+
+.radioTextLabel {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.cardLogosRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  margin-left: 34px;
+  flex-wrap: wrap;
+}
+
+.brandLogoImg {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 2px;
+  object-fit: contain;
+  background-color: var(--white);
+  height: 36px;
+  width: 56px;
+}
+
+.dropdownWrapper {
+  margin-top: 12px;
+  margin-left: 34px;
+}
+
+.bankDropdownTrigger {
+  border: 1.5px solid var(--dark-orange);
+  color: var(--dark-orange);
+  background-color: transparent;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.bankDropdownTrigger:hover {
+  background-color: rgba(255, 140, 0, 0.04);
+}
+
+.triggerChevron {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.optionHintText {
+  margin-top: 8px;
+  margin-left: 34px;
+  font-size: 14px;
+  color: var(--funky-grey);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.giftCardRowContainer {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.giftCardDetails {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.giftBoxIcon {
+  font-size: 22px;
+}
+
+.giftLabelText {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.applyGiftButton {
+  background: none;
+  border: none;
+  color: var(--dark-orange);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.applyGiftButton:hover {
+  color: var(--dark-orange-hover);
+  text-decoration: underline;
+}
+
+/* Embedded Order Summary Overrides for Tablet view */
+.checkoutSummaryPanel .orderSummary {
+  position: static;
+}
+
+.checkoutSummaryPanel .summaryCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px 32px;
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  position: static;
+  top: 0;
+}
+
+.checkoutSummaryPanel .summaryCard h4 {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--black);
+  margin-bottom: 20px;
+}
+
+.checkoutSummaryPanel .summaryCard .row {
+  padding: 12px 0 !important;
+  border-bottom: 1px dashed #e0e0e0;
+  font-size: 15px;
+}
+
+.checkoutSummaryPanel .summaryCard .row.total {
+  border-top: 1.5px solid var(--black);
+  border-bottom: none;
+  margin-top: 16px;
+  padding-top: 16px !important;
+}
+
+.checkoutSummaryPanel .summaryCard .row.total dt,
+.checkoutSummaryPanel .summaryCard .row.total dd {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.checkoutSummaryPanel .placeOrder {
+  margin-top: 24px;
+  background: var(--primary-gradient);
+  color: var(--white);
+  padding: 16px;
+  width: 100%;
+  border-radius: 8px;
+  border: 0;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+}
+
+.checkoutSummaryPanel .placeOrder:hover {
+  opacity: 0.95;
+}
+
+/* Toast styling */
+.toastContainer {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333333;
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1100;
+  animation: slideUpToast 0.3s ease-out;
+}
+
+.toastContainer.success {
+  background-color: #2e7d32;
+}
+
+.toastContainer.info {
+  background-color: #0288d1;
+}
+
+.toastMessage {
+  font-size: 14px;
+}
+
+@keyframes slideUpToast {
+  from {
+    bottom: -50px;
+    opacity: 0;
+  }
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+
+/* ==========================================================
+   RESPONSIVE LAYOUT SWITCH (Media Query Toggles)
+   ========================================================== */
+@media (max-width: 1024px) {
+  .desktopPaymentLayout {
+    display: none !important;
+  }
+
+  .tabletPaymentLayout {
+    display: block !important;
+  }
+
+  .paymentLayoutContainer {
+    max-width: 850px;
+    margin: 0 auto 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkoutPaymentWrap {
+    padding: 30px 15px 0;
+  }
+
+  .checkoutPaymentHeader .backBtn {
+    font-size: 24px;
+  }
+
+  .paymentCard {
+    padding: 20px 24px;
+  }
+
+  .cardLogosRow {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .dropdownWrapper,
+  .optionHintText {
+    margin-left: 0;
+  }
+
+  .giftCardRowContainer {
+    padding: 16px 24px;
+  }
+
+  .checkoutSummaryPanel .summaryCard {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .radioTextLabel {
+    font-size: 14px;
+  }
+  
+  .giftLabelText {
+    font-size: 14px;
+  }
+  
+  .applyGiftButton {
+    font-size: 14px;
+  }
+}

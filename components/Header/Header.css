@@ -1,0 +1,416 @@
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+}
+
+.logoArea img{
+  width : auto;
+  height: 72px;
+}
+
+.topBar {
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.locationArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dark-charcoal);
+  cursor: pointer;
+  margin-left: 20px;
+}
+
+.locationIcon {
+  color: var(--dark-charcoal);
+}
+
+.locationLabel {
+  font-size: 14px;
+  color: var(--funky-grey);
+  display: block;
+  line-height: 1;
+}
+
+.locationValue {
+  font-size: 16px;
+  color: var(--dark-charcoal);
+}
+
+.searchArea {
+  flex: 1;
+  max-width:748.48px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--funky-grey);
+  border-radius: 25px;
+  background-color: var(--white);
+  margin: 0 20px;
+  height: 60px;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0 55px 0 20px;
+  font-size: 14px;
+  outline: none;
+  color: var(--dark-charcoal);
+  height: 100%;
+}
+
+.searchInput::placeholder {
+  color: var(--funky-grey);
+}
+
+.searchButton {
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--dark-orange);
+  color: var(--black);
+  border: none;
+  width: 74.95px;
+  height: 100%;
+  border-radius: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  right: -10px;
+}
+
+
+
+
+
+.actionArea {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.langSelector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--dark-charcoal);
+}
+
+.iconCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dark-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-orange);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s, color 0.2s;
+}
+
+.iconCircle:hover {
+  background-color: var(--dark-orange);
+  color: var(--white);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--alizarian);
+  color:var(--white);
+  font-size: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  border: 2px solid var(--white);
+}
+
+/* Secondary Nav Bar */
+.navBar {
+  background-color: var(--dark-orange);
+  padding: 14px 0;
+}
+
+.navList {
+  display: flex;
+  justify-content: space-between; /* This creates the space between text */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--white);
+  text-decoration: none !important;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  opacity: 0.8;
+}
+
+/* Sidebar / Drawer Styles */
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -350px;
+  width: 300px;
+  height: 100vh;
+  background:var(--white);
+  z-index: 1000;
+  transition: left 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.drawerOpen {
+  left: 0;
+}
+
+.drawerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: none;
+}
+
+.overlayVisible {
+  display: block;
+}
+
+.drawerHeader {
+  background-color: var(--dark-orange);
+  color: var(--white);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawerProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.drawerClose {
+  cursor: pointer;
+}
+
+.drawerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.drawerListItem {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--bg-light);
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.drawerListItem:hover {
+  background-color: var(--bg-light);
+}
+
+.drawerItemContent {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--dark-charcoal);
+}
+
+.drawerIconWrapper {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.drawerIconImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.category-sidebar-title{
+  font-size: 20px;
+}
+
+.category-navitem{
+  font-size: 20px;
+}
+
+/* Mobile and Tablet Styles */
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--dark-charcoal);
+  cursor: pointer;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileSearchArea {
+  display: none;
+}
+
+.mobileLocationBar {
+  display: none;
+}
+
+.mobileLocationIcon {
+  margin-right: 8px;
+}
+
+.mobileLocationText {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1024px) {
+  .mobileMenuBtn {
+    display: flex !important;
+  }
+
+  .logoArea {
+    display: none !important;
+  }
+
+  .locationArea {
+    display: none !important;
+  }
+
+  .navBar {
+    display: none !important;
+  }
+
+  .favIconCircle {
+    display: none !important;
+  }
+
+  .desktopSearchArea {
+    display: none !important;
+  }
+
+  .topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0 !important;
+    gap: 0;
+  }
+
+  .actionArea {
+    margin-left: auto;
+    gap: 15px;
+  }
+
+  .mobileSearchArea {
+    display: block !important;
+    background-color: #fff;
+    padding: 15px 0;
+  }
+
+  .searchArea {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    height: 54px;
+    border: 1px solid var(--funky-grey);
+    border-radius: 27px;
+    background-color: var(--white);
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  
+  .searchInput {
+    font-size: 14px;
+    padding: 0 50px 0 20px;
+  }
+  
+  .searchButton {
+    width: 60px;
+    right: -2px;
+  }
+
+  .mobileLocationBar {
+    display: flex !important;
+    align-items: center;
+    width: 100%;
+    background-color: var(--dark-orange) !important;
+    color: var(--black) !important;
+    margin: 0 !important;
+    height: 48px;
+    border-radius: 0 !important;
+    cursor: pointer;
+  }
+  
+  .mobileLocationText {
+    color: var(--black) !important;
+  }
+  
+  .mobileLocationIcon, .mobileLocationArrow {
+    color: var(--black) !important;
+  }
+  
+  .drawer {
+    width: 280px;
+  }
+}

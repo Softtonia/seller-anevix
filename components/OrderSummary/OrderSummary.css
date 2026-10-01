@@ -1,0 +1,64 @@
+.orderSummary {
+  position: relative;
+}
+.summaryCard {
+  background: var(--white);
+  padding: 20px;
+  border-radius: 3px;
+  border: 1px solid var(--funky-grey);
+  position: sticky;
+  top: 20px;
+}
+.summaryCard h4 {
+  margin-top: 0;
+}
+.summaryCard dl {
+  margin: 0;
+  padding: 0;
+}
+.summaryCard .row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 5px 0 !important;
+  border-bottom: 1px dashed var(--bg-light);
+}
+.summaryCard .row dt,
+.summaryCard .row dd {
+  margin: 0;
+}
+.summaryCard .row dt {
+  color: var(--black);
+}
+.summaryCard .row dd {
+  color: var(--black);
+  justify-self: end;
+  text-align: right;
+}
+.summaryCard .row.total dt {
+  font-weight: 700;
+}
+.summaryCard .row.total{
+    margin-top:10px
+}
+.placeOrder {
+  margin-top: 16px;
+  background: var(--dark-orange);
+  color: var(--white);
+  padding: 14px;
+  width: 100%;
+  border-radius: 6px;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.placeOrder:hover {
+  filter: brightness(0.95);
+}
+
+@media (max-width: 992px) {
+  .summaryCard {
+    position: static;
+  }
+}

@@ -1,0 +1,319 @@
+.securityWrap {
+  padding: 40px 20px 30px;
+  background: var(--white);
+  min-height: 80vh;
+}
+
+.securityInner {
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.securityHeader {
+  margin-bottom: 35px;
+}
+
+/* Panel Card Container */
+.securityCardPanel {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  margin-bottom: 60px;
+}
+
+/* Row Layout */
+.panelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 30px;
+  transition: background-color 0.15s ease;
+}
+
+.panelRow:last-child {
+  border-bottom: none;
+}
+
+.panelRow:hover {
+  background-color: #fbfbfb;
+}
+
+.rowMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rowLabel {
+  color: var(--black);
+  margin: 0 0 6px 0;
+}
+
+.rowValue {
+  font-size: 18px;
+  color: var(--funky-grey);
+  margin: 0;
+}
+
+.rowHelpText {
+  font-size: 18px;
+  color: var(--funky-grey);
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+/* Warnings and Alerts in rows */
+.rowAlert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 18px;
+  color: var(--dark-charcoal);
+  padding: 8px 14px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.alertIcon {
+  color: #fbc02d;
+  font-size: 18px;
+}
+
+.successAlert {
+  background-color: #e8f5e9;
+  border-color: #c8e6c9;
+}
+
+.greenIcon {
+  color: var(--traditional-green);
+}
+
+/* Pill buttons on the right */
+.rowPillBtn {
+  border: 1px solid var(--dark-orange);
+  color: var(--dark-orange);
+  background-color: transparent;
+  padding: 6px 22px;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  min-width: 90px;
+  text-align: center;
+}
+
+.rowPillBtn:hover {
+  background-color: var(--dark-orange);
+  color: var(--white);
+}
+
+.passkeyActionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.removeBtn {
+  border-color: var(--funky-grey);
+  color: var(--funky-grey);
+}
+
+.removeBtn:hover {
+  background-color: var(--funky-grey);
+  color: var(--white);
+}
+
+.activeBadge {
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.badgeGreen {
+  background-color: #e8f5e9;
+  color: var(--traditional-green);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 18px;
+}
+
+/* Inline Editing Style */
+.inlineEditContainer {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  animation: fadeInRow 0.2s ease-out;
+}
+
+@keyframes fadeInRow {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inlineInput {
+  padding: 10px 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 14.5px;
+  outline: none;
+  width: 100%;
+}
+
+.inlineInput:focus {
+  border-color: var(--dark-orange);
+}
+
+.editActions {
+  display: flex;
+  gap: 10px;
+}
+
+.saveActionBtn {
+  background: var(--primary-gradient);
+  border: none;
+  color: var(--white);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.saveActionBtn:hover {
+  opacity: 0.9;
+}
+
+/* Password Form Sizing */
+.passwordForm {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  animation: fadeInRow 0.2s ease-out;
+}
+
+.passwordFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.passwordFormGroup label {
+  font-size: 13px;
+  color: var(--funky-grey);
+}
+
+.passwordInput {
+  font-family: monospace;
+}
+
+/* Modals design */
+.otpFormGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.otpInputBox {
+  padding: 12px 20px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 24px;
+  letter-spacing: 6px;
+  text-align: center;
+  outline: none;
+  max-width: 240px;
+}
+
+.otpInputBox:focus {
+  border-color: var(--dark-orange);
+}
+
+/* Audit wizards */
+.scanActionBtn {
+  background: var(--vermillion);
+  border: none;
+  color: var(--white);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.scanActionBtn:hover {
+  opacity: 0.9;
+}
+
+.closeScanBtn {
+  background-color: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.closeScanBtn:hover {
+  opacity: 0.9;
+}
+
+.auditProgress {
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.largeSpinner {
+  width: 45px;
+  height: 45px;
+  border-width: 3px;
+}
+
+.textMuted {
+  color: var(--funky-grey);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* Responsive constraints */
+@media (max-width: 768px) {
+  .panelRow {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+    gap: 16px;
+  }
+
+  .passkeyActionGroup {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .rowPillBtn {
+    width: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .securityWrap {
+    padding: 30px 10px;
+  }
+  
+  .securityInner {
+    padding: 0 10px;
+  }
+}

@@ -1,0 +1,56 @@
+.countdownStyle1Wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.08);
+  color: var(--dark-charcoal);
+  min-width: 260px;
+}
+
+.countdownLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: var(--dark-orange);
+}
+
+.countdownStyle1Timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.countdownUnit {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.countdownValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--dark-charcoal);
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
+
+.countdownText {
+  font-size: 10px;
+  color: var(--dark-charcoal);
+  letter-spacing: 0.2px;
+}
+
+.countdownSeparator {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+}

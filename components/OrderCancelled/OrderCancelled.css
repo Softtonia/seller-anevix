@@ -1,0 +1,165 @@
+.cancelledScreenWrap {
+  padding: 40px 20px 0px;
+  background: var(--white);
+}
+
+.cancelledScreenInner {
+  padding: 0px 20px;
+  margin: 0 auto;
+}
+
+.cancelledScreenHeader {
+  border-bottom: 1px solid var(--funky-grey);
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+
+.cancelledScreenHeader .backBtnLink {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--dark-charcoal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+.backArrowIcon {
+  font-size: 20px !important;
+  stroke-width: 3;
+}
+
+/* Centered Title */
+.cancelledStatusTitleContainer {
+  text-align: center;
+  margin: 48px 0;
+}
+
+.cancelledPageTitle {
+  font-size: 32px;
+  color: var(--dark-charcoal);
+  margin: 0;
+}
+
+/* Cancelled Items List */
+.cancelledItemsSection {
+  margin-bottom: 40px;
+}
+
+.cancelledCountLabel {
+  color: var(--dark-charcoal);
+  margin-bottom: 16px;
+}
+
+.cancelledCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cancelledItemCard {
+  border: 1px solid var(--funky-grey);
+  border-radius: 12px;
+  background: var(--white);
+  padding: 18px 24px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.itemImgContainer {
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--bg-light);
+}
+
+.itemImg {
+  object-fit: cover;
+  display: block;
+}
+
+.itemCardDetails {
+  flex: 1;
+}
+
+.itemOrderId {
+  font-size: 20px;
+  color: var(--funky-grey);
+  margin: 0 0 4px;
+}
+
+.itemProductName {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.itemMeta {
+  font-size:20px;
+  color: var(--funky-grey);
+  margin: 0;
+}
+
+/* Notice Box Info */
+.noticeInfoBox {
+  border: 1px solid var(--funky-grey);
+  border-radius: 12px;
+  padding: 28px;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.noticeRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.noticeCheckIcon {
+  color: var(--traditional-green);
+  font-size: 26px !important;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noticeTextContent {
+  flex: 1;
+}
+
+.noticeRowTitle {
+  font-size: 16px;
+  color: var(--dark-charcoal);
+  margin: 0 0 6px;
+  letter-spacing: 0.05em;
+}
+
+.noticeRowDesc {
+  font-size: 14px;
+  color: var(--funky-grey);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+  .cancelledPageTitle {
+    font-size: 26px;
+  }
+  .cancelledItemCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .itemProductName {
+    font-size: 16px;
+  }
+  .noticeInfoBox {
+    padding: 20px;
+  }
+}

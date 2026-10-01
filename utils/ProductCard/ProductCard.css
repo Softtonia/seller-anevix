@@ -1,0 +1,192 @@
+/* utils/ProductCard/ProductCard.css */
+
+.productCard {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: 0.3s ease;
+  border: 1px solid #ececec;
+  display: flex;
+  flex-direction: column;
+}
+
+.productCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================
+   IMAGE
+========================= */
+
+.productImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: #f6f6f6;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================
+   BADGE
+========================= */
+
+.productBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.productBadge.discount {
+  background: var(--vermillion);
+}
+
+.productBadge.hot {
+  background: var(--dark-orange);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.productContent {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.productTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.productBrand {
+  font-size: 14px;
+  color: #7a7a7a;
+  line-height: 1;
+}
+
+.productRating {
+  font-size: 14px;
+  color: var(--black);
+  white-space: nowrap;
+}
+.productRating span{
+color: var(--dark-orange);
+margin-right:4px
+}
+
+.productTitle {
+  font-size: 14px;
+  color: var(--black);
+  line-height: 1.3;
+  margin: 0;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================
+   PRICE
+========================= */
+
+.productPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.oldPrice {
+  font-size: 14px;
+  color: #9d9d9d;
+  text-decoration: line-through;
+}
+
+.newPrice {
+  font-size: 14px;
+  color: #111;
+}
+
+/* =========================
+   BOTTOM
+========================= */
+
+.productBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  gap: 10px;
+}
+
+.reviewCount {
+  font-size: 13px;
+  color: #7b7b7b;
+}
+
+.discountTag {
+  background: #fff2df;
+  color: var(--dark-orange);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+
+  .productImageWrapper {
+    height: 240px;
+  }
+
+  .productTitle {
+    font-size: 16px;
+  }
+
+  .newPrice {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 1024px) {
+
+  .productImageWrapper {
+    height: 220px;
+  }
+
+  .productContent {
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .productTitle {
+    font-size: 13px !important;
+  }
+
+  .newPrice {
+    font-size: 13px !important;
+  }
+}

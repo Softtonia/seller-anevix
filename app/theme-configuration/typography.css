@@ -1,0 +1,111 @@
+/* Local Poppins Fonts */
+@font-face {
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-Thin.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Local Inter Fonts */
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-Thin.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Typography Classes - Poppins */
+.Poppins-bold { font-family: 'Poppins', sans-serif; font-weight: 700; }
+.Poppins-semi-bold { font-family: 'Poppins', sans-serif; font-weight: 600; }
+.Poppins-medium { font-family: 'Poppins', sans-serif; font-weight: 500; }
+.Poppins-regular { font-family: 'Poppins', sans-serif; font-weight: 400; }
+.Poppins-thin { font-family: 'Poppins', sans-serif; font-weight: 300; }
+
+/* Typography Classes - Inter */
+.Inter-bold { font-family: 'Inter', sans-serif; font-weight: 700; }
+.Inter-semi-bold { font-family: 'Inter', sans-serif; font-weight: 600; }
+.Inter-medium { font-family: 'Inter', sans-serif; font-weight: 500; }
+.Inter-regular { font-family: 'Inter', sans-serif; font-weight: 400; }
+.Inter-thin { font-family: 'Inter', sans-serif; font-weight: 300; }
+
+/* Web Typography (Default) */
+h1 { font-size: 48px; font-weight: 700 !important; }
+h2 { font-size: 40px; font-weight: 600 !important; }
+h3 { font-size: 32px; font-weight: 600 !important; }
+h4 { font-size: 28px; font-weight: 500 !important; }
+h5 { font-size: 24px; font-weight: 400 !important; }
+h6 { font-size: 20px; font-weight: 400 !important; }
+p { font-size: 16px; font-weight: 400 !important; }
+small { font-size: 14px; font-weight: 400 !important; }
+
+/* Tablet Typography */
+@media (max-width: 1024px) {
+  h1 { font-size: 32px !important; }
+  h2 { font-size: 28px !important; }
+  h3 { font-size: 13px !important; font-weight: 500 !important; }
+  h4 { font-size: 20px !important; font-weight: 500 !important; }
+  h5 { font-size: 18px !important; font-weight: 500 !important; }
+  h6 { font-size: 16px !important; }
+  p { font-size: 15px !important; }
+  small { font-size: 13px !important; }
+}
+
+/* Mobile Typography */
+@media (max-width: 600px) {
+  h1 { font-size: 28px !important; }
+  h2 { font-size: 24px !important; }
+  h3 { font-size: 20px !important; font-weight: 500 !important; }
+  h4 { font-size: 18px !important; font-weight: 500 !important; }
+  h5 { font-size: 16px !important; font-weight: 500 !important; }
+  h6 { font-size: 14px !important; }
+  p { font-size: 14px !important; }
+  small { font-size: 12px !important; }
+}

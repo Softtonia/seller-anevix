@@ -1,0 +1,38 @@
+
+
+
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.container{
+  width: 1440px;
+}
+.container-fluid{
+  padding : 0 20px
+}
+.b-none{
+  border:none !important;
+}
+
+.sub-container{
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Bootstrap Overrides if needed */
+.navbar {
+  background-color: var(--white) !important;
+}
+
+/* Global Transitions */
+* {
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+

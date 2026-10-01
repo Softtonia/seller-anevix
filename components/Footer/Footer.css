@@ -1,0 +1,130 @@
+.footer {
+  background-color: var(--white);
+  padding: 60px 0 20px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.footerContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: space-between;
+}
+
+.brandColumn {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+}
+
+.logo {
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--black);
+}
+
+.column {
+  flex: 1;
+  min-width: 150px;
+}
+
+.columnTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--funky-grey);
+  margin-bottom: 10px;
+  text-transform: capitalize;
+  border-bottom: 1px solid transparent;
+  border-bottom: 2px solid var(--funky-grey);
+  display: inline-block;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.linkItem {
+  margin-bottom: 7px;
+}
+
+.link {
+  text-decoration: none !important;
+  color: var(--black);
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--dark-charcoal);
+}
+
+.addressColumn {
+  flex: 2;
+  min-width: 300px;
+  display: flex;
+  gap: 20px;
+}
+
+.addressSubColumn {
+  flex: 1;
+}
+
+
+
+.addressText {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--black);
+  margin-bottom: 15px;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.socialIcon {
+  font-size: 18px;
+  color: var(--dark-charcoal);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.socialIcon:hover {
+  transform: scale(1.2);
+  color: var(--dark-charcoal);
+}
+
+.bottomBar {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid var(--funky-grey);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.copyright {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.bottomLinks {
+  display: flex;
+  gap: 145px;
+}
+
+.bottomLink {
+  text-decoration: none !important;
+  color: var(--black);
+  font-size: 16px;
+  font-weight: 500;
+}

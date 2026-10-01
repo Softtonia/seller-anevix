@@ -1,0 +1,40 @@
+.countdownStyle2Wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.countdownStyle2Label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.countdownStyle2Track {
+  display: flex;
+  gap: 4px;
+}
+
+.countdownStyle2Unit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--alizarian);
+  border-radius: 6px;
+}
+
+.countdownStyle2Value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+}
+
+/* hide labels to match the image */
+.countdownStyle2Text {
+  display: none;
+}

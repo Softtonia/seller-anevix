@@ -1,0 +1,257 @@
+.orderDetailWrap {
+  padding: 40px 20px 0px;
+  background: var(--white);
+}
+
+
+.orderDetailHeader {
+  border-bottom: 1px solid var(--funky-grey);
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+
+.backBtnLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--funky-grey);
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 200ms ease;
+  margin-bottom: 16px;
+}
+
+.backBtnLink:hover {
+  color: var(--dark-orange);
+}
+
+.orderDetailHeader h1 {
+  color: var(--dark-charcoal);
+  margin: 0;
+}
+
+/* Product Summary Card styling matching list view */
+.productSummaryCard {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.summaryImgContainer {
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--bg-light);
+}
+
+.summaryImg {
+  object-fit: cover;
+  display: block;
+}
+
+.summaryDetails {
+  flex: 1;
+  min-width: 250px;
+}
+
+.summaryOrderId {
+  font-size: 20px;
+  color: var(--funky-grey);
+  margin: 0 0 6px;
+  letter-spacing: 0.03em;
+}
+
+.summaryProductName {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.summaryMeta {
+  font-size: 20px;
+  color: var(--funky-grey);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summaryMetaSeparator {
+  color: var(--bg-light);
+}
+
+/* Status Info Box */
+.statusInfoBox {
+  border: 1px solid var(--funky-grey);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--white);
+  margin-bottom: 40px;
+}
+
+.statusHeader {
+  margin-bottom: 16px;
+}
+
+.statusTitle {
+  color: var(--traditional-green);
+  margin: 0 0 12px;
+}
+
+.statusInfoBox.cancelled .statusTitle {
+  color: var(--alizarian);
+}
+
+.statusMessage {
+  font-size: 24px;
+  color: var(--dark-charcoal);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* See All Updates Link Button */
+.toggleUpdatesBtn {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--bg-light);
+  width: 100%;
+  padding: 16px 0 0;
+  margin-top: 16px;
+  color: var(--bayside-blue);
+  font-size: 24px;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 200ms ease;
+  display: block;
+}
+
+.toggleUpdatesBtn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Timeline updates list */
+.updatesTimeline {
+  margin-top: 24px;
+  padding: 8px 12px;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 20px;
+}
+
+.timelineNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.nodeCircle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--traditional-green);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.nodeLine {
+  width: 2px;
+  flex: 1;
+  background: var(--bg-light);
+  min-height: 40px;
+}
+
+.timelineContent {
+  padding-bottom: 24px;
+  flex: 1;
+}
+
+.timelineItem:last-child .timelineContent {
+  padding-bottom: 8px;
+}
+
+.updateMeta {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+  margin: 0 0 4px;
+}
+
+.updateTime {
+  color: var(--funky-grey);
+}
+
+.updateMessage {
+  font-size: 15px;
+  color: var(--funky-grey);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Error / Not Found State */
+.errorState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 60px 40px;
+  background: var(--white);
+  border: 1px solid var(--bg-light);
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 40px auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.errorContainer h2 {
+  font-size: 24px;
+  color: var(--dark-charcoal);
+  margin: 16px 0 8px;
+}
+
+.errorContainer p {
+  font-size: 15px;
+  color: var(--funky-grey);
+  margin-bottom: 24px;
+}
+
+.returnBtn {
+  display: inline-block;
+  background: var(--dark-orange);
+  color: var(--white);
+  padding: 12px 32px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 200ms ease;
+}
+
+.returnBtn:hover {
+  background: var(--dark-orange-hover);
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+  .productSummaryCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .summaryDetails {
+    min-width: 100%;
+  }
+  .statusTitle {
+    font-size: 20px;
+  }
+  .statusMessage {
+    font-size: 14px;
+  }
+}

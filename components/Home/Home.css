@@ -1,0 +1,16 @@
+.homeWrapper {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.heroSection {
+  margin-bottom: 40px;
+}
+
+.promoSection {
+  margin-bottom: 60px;
+}
+
+.dealsSection {
+  margin-bottom: 60px;
+}

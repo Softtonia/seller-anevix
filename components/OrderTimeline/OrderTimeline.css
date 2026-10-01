@@ -1,0 +1,207 @@
+.timelineWrap {
+  padding: 40px 20px 0px;
+  background: var(--white);
+  min-height: 100vh;
+}
+
+.timelineInner {
+  margin: 0 auto;
+  padding : 0 10px
+}
+
+.timelineHeader {
+  border-bottom: 1px solid var(--funky-grey);
+  padding-bottom: 16px;
+  margin-bottom: 40px;
+}
+
+.timelineHeader h1 {
+  color: var(--dark-charcoal);
+  margin: 0;
+}
+
+/* Vertical Timeline Track */
+.verticalTimeline {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 48px;
+  padding-left: 8px;
+}
+
+.timelineStep {
+  display: flex;
+  gap: 24px;
+}
+
+.timelineLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.statusCheckCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.timelineStep.active .statusCheckCircle {
+  background: var(--traditional-green);
+  color: var(--white);
+  box-shadow: 0 0 0 1px var(--traditional-green);
+}
+
+.timelineStep.inactive .statusCheckCircle {
+  background: var(--bg-light);
+  border: 1px solid var(--funky-grey);
+  color: var(--funky-grey);
+  box-shadow: 0 0 0 1px var(--funky-grey);
+}
+
+.checkIcon {
+  font-size: 18px !important;
+}
+
+.dotMarker {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--funky-grey);
+}
+
+.verticalConnectorLine {
+  width: 2px;
+  flex: 1;
+  min-height: 80px;
+  z-index: 1;
+  transition: background-color 0.2s;
+}
+
+.timelineStep.active .verticalConnectorLine {
+  background: var(--traditional-green);
+}
+
+.timelineStep.inactive .verticalConnectorLine {
+  background: var(--bg-light);
+}
+
+.timelineRight {
+  flex: 1;
+  padding-bottom: 32px;
+  margin-top: 2px;
+}
+
+.timelineStep:last-child .timelineRight {
+  padding-bottom: 0;
+}
+
+.updateStepTitle {
+  font-size: 20px;
+  color: var(--dark-charcoal);
+  margin: 0 0 6px;
+}
+
+.updateStepDesc {
+  font-size: 16px;
+  color: var(--funky-grey);
+  margin: 0 0 6px;
+}
+
+.updateStepTime {
+  font-size: 16px;
+  color: var(--funky-grey);
+  margin: 0;
+}
+
+.timeSpan {
+  margin-left: 8px;
+}
+
+/* Help Card Section */
+.helpCardContainer {
+  border: 1px solid var(--funky-grey);
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--white);
+  margin-bottom: 40px;
+}
+
+.helpCardTitle {
+  color: var(--dark-orange);
+  margin: 0 0 8px;
+}
+
+.helpCardDesc {
+  font-size: 24px;
+  color: var(--funky-grey);
+  margin: 0 0 24px;
+}
+
+.helpCardActions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.supportBtn {
+  background: var(--dark-orange);
+  color: var(--white);
+  border: 0;
+  padding: 22px 68px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 200ms ease, transform 150ms ease;
+}
+
+.supportBtn:hover {
+  background: var(--dark-orange-hover);
+  transform: translateY(-1px);
+}
+
+.viewDetailsBtnLink {
+  background: var(--white);
+  color: var(--dark-orange);
+  border: 1px solid var(--dark-orange);
+  padding: 22px 68px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
+}
+
+.viewDetailsBtnLink:hover {
+  background: rgba(255, 140, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+  .helpCardActions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .supportBtn, .viewDetailsBtnLink {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 15px;
+    text-align: center;
+  }
+  .updateStepTitle {
+    font-size: 18px;
+  }
+  .helpCardTitle {
+    font-size: 20px;
+  }
+}
