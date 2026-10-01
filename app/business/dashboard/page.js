@@ -74,14 +74,14 @@ export default function BusinessDashboardPage() {
     return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Loading...</div>;
   }
 
-  if (onboardingStatus === 'REJECTED') {
+  if (onboardingStatus === 'REJECTED' || onboardingStatus === 'PENDING' || onboardingStatus === 'pending' || onboardingStatus === 'IN_PROGRESS' || onboardingStatus === 'DRAFT') {
     if (typeof window !== 'undefined') {
       window.location.href = '/business/onboarding';
     }
     return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Redirecting to Onboarding...</div>;
   }
 
-  if (onboardingStatus === 'UNDER_REVIEW' || onboardingStatus === 'pending' || onboardingStatus === 'PENDING' || onboardingStatus === 'IN_PROGRESS') {
+  if (onboardingStatus === 'UNDER_REVIEW') {
     return (
       <>
         <style>{`

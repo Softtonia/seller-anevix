@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import { sellerApi } from '@/api';
 import apiClient from '@/api/axiosClient';
 import { useSeller } from '@/contexts/SellerContext';
+import RejectedFieldsForm from './RejectedFieldsForm';
 import './Onboarding.css';
 
 export default function SellerOnboardingPage() {
@@ -71,6 +72,14 @@ export default function SellerOnboardingPage() {
       localStorage.setItem('onboardingStep', currentStep.toString());
     } catch (e) {}
   }, [currentStep]);
+
+  // Redirect if already submitted or approved
+  useEffect(() => {
+    const status = sellerProfile?.onboardingStatus || sellerProfile?.status;
+    if (status && (status === 'UNDER_REVIEW' || status === 'APPROVED' || status === 'ACTIVE')) {
+       router.push('/business/dashboard');
+    }
+  }, [sellerProfile, router]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -389,6 +398,7 @@ export default function SellerOnboardingPage() {
         </div>
 
         {/* Horizontal Stepper */}
+        {!isRejected && (
         <div className="h-stepper">
           {steps.map((step, idx) => (
             <React.Fragment key={step.num}>
@@ -402,18 +412,17 @@ export default function SellerOnboardingPage() {
             </React.Fragment>
           ))}
         </div>
+        )}
 
-        {/* Form Card */}
+        {isRejected ? (
+          <RejectedFieldsForm
+            key={formData.fullName} // to remount when initialData is fully loaded
+            rejectedFields={rejectedFields}
+            initialData={formData}
+            reviewNotes={reviewNotes}
+          />
+        ) : (
         <div className="onboarding-form-card">
-          {isRejected && (
-            <div className="info-alert" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171', color: '#991b1b', marginBottom: '24px' }}>
-              <InfoOutlined fontSize="small" style={{ color: '#ef4444' }} />
-              <div>
-                <strong style={{ display: 'block', marginBottom: '4px' }}>Your application was rejected. Please correct the highlighted fields and resubmit.</strong>
-                {reviewNotes && <span>Admin Note: {reviewNotes}</span>}
-              </div>
-            </div>
-          )}
           <form className="onboarding-form" onSubmit={handleNextStep}>
             
             {/* STEP 1: Profile & Business Information */}
@@ -784,9 +793,11 @@ export default function SellerOnboardingPage() {
             
           </form>
         </div>
+        )}
       </div>
 
       {/* RIGHT COLUMN: Sidebar Progress */}
+      {!isRejected && (
       <div className="onboarding-sidebar">
         <div className="progress-sidebar-card">
           <h3>
@@ -818,6 +829,7 @@ export default function SellerOnboardingPage() {
           </div>
         </div>
       </div>
+      )}
 
       </div>
     </div>
