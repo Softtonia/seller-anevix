@@ -61,6 +61,14 @@ export default function BusinessLayout({ children }) {
     (user.firstName?.[0] || 'S') + (user.lastName?.[0] || 'P')
   ).toUpperCase();
 
+  if (pathname === '/business/onboarding') {
+    return (
+      <div style={{ minHeight: '100vh', width: '100vw', margin: 0, padding: 0, backgroundColor: '#f8fafc', overflowX: 'hidden', fontFamily: '"Inter", "Segoe UI", sans-serif' }}>
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="business-layout">
       {/* Sidebar */}

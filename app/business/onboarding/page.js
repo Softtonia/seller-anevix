@@ -5,64 +5,87 @@ import {
   ArrowForwardOutlined,
   ArrowBackOutlined,
   CheckCircle,
+  InfoOutlined,
+  FileUploadOutlined,
+  AssignmentTurnedInOutlined,
+  PersonOutlineOutlined,
+  DescriptionOutlined,
+  AccountBalanceOutlined,
+  CheckCircleOutlined
 } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import { sellerApi } from '@/api';
+import apiClient from '@/api/axiosClient';
 import './Onboarding.css';
 
 export default function SellerOnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [sameAsBusinessAddress, setSameAsBusinessAddress] = useState(false);
 
-  // Form State matching the {{live}}/seller/onboarding/step1 contract
+  // Form State
   const [formData, setFormData] = useState({
-    // Step 1 Fields
+    // Step 1: Profile & Business
+    fullName: '',
+    mobileNumber: '',
+    emailAddress: '',
+    dob: '',
     companyName: '',
     businessType: 'PRIVATE_LIMITED',
     sellerType: 'RETAILER',
+    street: '',
+    city: '',
+    state: '',
+    pinCode: '',
 
-    businessAddress: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'India',
-    },
+    // Step 2: PAN
+    panNumber: '',
+    nameOnPan: '',
+    isPanVerified: false,
 
-    residentialAddress: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'India',
-    },
+    // Step 3: GSTIN
+    gstinNumber: '',
+    businessName: '',
+    isGstinVerified: false,
 
-    // Step 2 & 3 state (for future steps)
-    bankName: '',
-    accountNumber: '',
-    confirmAccountNumber: '',
-    ifscCode: '',
+    // Step 4: Bank Account
     accountHolderName: '',
+    bankName: 'State Bank of India',
+    accountNumber: '',
+    ifscCode: '',
+    isBankPending: false,
   });
 
-  // Prepopulate company name if user is stored in localStorage
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const u = JSON.parse(storedUser);
-        if (u.firstName || u.name) {
+    const fetchProfile = async () => {
+      try {
+        const response = await apiClient.get('/users/profile');
+        const user = response.data?.profile || response.data?.user || response.data;
+        if (user) {
           setFormData((prev) => ({
             ...prev,
-            companyName: prev.companyName || `${u.firstName || u.name}'s Enterprise`,
+            fullName: user.name || user.firstName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : prev.fullName,
+            mobileNumber: user.phoneNumber || user.mobileNumber || user.phone || prev.mobileNumber,
+            emailAddress: user.email || prev.emailAddress,
           }));
         }
+      } catch (err) {
+        // Fallback to localStorage if API fails
+        try {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            const u = JSON.parse(storedUser);
+            setFormData((prev) => ({
+              ...prev,
+              fullName: u.name || u.firstName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : prev.fullName,
+              mobileNumber: u.mobileNumber || u.phone || prev.mobileNumber,
+              emailAddress: u.email || prev.emailAddress,
+            }));
+          }
+        } catch (e) {}
       }
-    } catch (e) {
-      // ignore
-    }
+    };
+    fetchProfile();
   }, []);
 
   const handleRootChange = (e) => {
@@ -70,138 +93,96 @@ export default function SellerOnboardingPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleBusinessAddressChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      const updatedBusiness = { ...prev.businessAddress, [name]: value };
-      return {
-        ...prev,
-        businessAddress: updatedBusiness,
-        ...(sameAsBusinessAddress ? { residentialAddress: { ...updatedBusiness } } : {}),
-      };
-    });
-  };
-
-  const handleResidentialAddressChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      residentialAddress: {
-        ...prev.residentialAddress,
-        [name]: value,
-      },
-    }));
-  };
-
-  const handleSameAddressToggle = (e) => {
-    const isChecked = e.target.checked;
-    setSameAsBusinessAddress(isChecked);
-    if (isChecked) {
-      setFormData((prev) => ({
-        ...prev,
-        residentialAddress: { ...prev.businessAddress },
-      }));
-    }
-  };
-
-  const handleSubmitStep1 = async () => {
-    // Validate Step 1
-    if (!formData.companyName.trim()) {
-      toast.error('Company name is required.');
+  const handleVerifyPan = async (e) => {
+    e.preventDefault();
+    if (!formData.panNumber.trim() || !formData.nameOnPan.trim()) {
+      toast.error('PAN Number and Name on PAN are required.');
       return;
     }
-    if (!formData.businessAddress.street.trim()) {
-      toast.error('Business street address is required.');
-      return;
-    }
-    if (!formData.businessAddress.city.trim() || !formData.businessAddress.state.trim()) {
-      toast.error('Business city and state are required.');
-      return;
-    }
-    if (!formData.businessAddress.zipCode.trim()) {
-      toast.error('Business ZIP/PIN code is required.');
-      return;
-    }
-
-    if (!formData.residentialAddress.street.trim()) {
-      toast.error('Residential street address is required.');
-      return;
-    }
-    if (!formData.residentialAddress.city.trim() || !formData.residentialAddress.state.trim()) {
-      toast.error('Residential city and state are required.');
-      return;
-    }
-    if (!formData.residentialAddress.zipCode.trim()) {
-      toast.error('Residential ZIP/PIN code is required.');
-      return;
-    }
-
-    // Exact Payload formatting as specified:
-    const payload = {
-      companyName: formData.companyName,
-      businessType: formData.businessType,
-      sellerType: formData.sellerType,
-      businessAddress: {
-        street: formData.businessAddress.street,
-        city: formData.businessAddress.city,
-        state: formData.businessAddress.state.toUpperCase(),
-        zipCode: formData.businessAddress.zipCode,
-        country: formData.businessAddress.country || 'India',
-      },
-      residentialAddress: {
-        street: formData.residentialAddress.street,
-        city: formData.residentialAddress.city,
-        state: formData.residentialAddress.state.toUpperCase(),
-        zipCode: formData.residentialAddress.zipCode,
-        country: formData.residentialAddress.country || 'India',
-      },
-    };
-
     setLoading(true);
     try {
-      const res = await sellerApi.submitStep1(payload);
-      toast.success(res.data?.message || 'Step 1: Profile & addresses completed successfully!');
-      // Move to step 2
-      setCurrentStep(2);
+      await sellerApi.verifyPan({
+        panNumber: formData.panNumber.toUpperCase(),
+        nameOnPan: formData.nameOnPan,
+      });
+      toast.success('PAN Verification successful!');
+      setFormData(prev => ({ ...prev, isPanVerified: true }));
     } catch (err) {
-      const msg = err.message || 'Failed to submit onboarding step 1. Please try again.';
-      toast.error(msg);
+      toast.error(err.response?.data?.message || 'PAN Verification failed.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNextStep = (e) => {
+  const handleValidateGstin = async (e) => {
+    e.preventDefault();
+    if (!formData.gstinNumber.trim()) {
+      toast.error('GSTIN Number is required.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sellerApi.verifyGstin({
+        gstinNumber: formData.gstinNumber.toUpperCase(),
+        businessName: formData.businessName || 'Anevix Traders',
+      });
+      toast.success('GSTIN Verification successful!');
+      setFormData(prev => ({ ...prev, isGstinVerified: true }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'GSTIN Verification failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNextStep = async (e) => {
     e.preventDefault();
 
     if (currentStep === 1) {
-      handleSubmitStep1();
+      if (!formData.fullName.trim() || !formData.mobileNumber.trim() || !formData.emailAddress.trim() || !formData.companyName.trim() || !formData.street.trim() || !formData.city.trim() || !formData.state.trim() || !formData.pinCode.trim()) {
+        toast.error('Please fill in all required personal and business information.');
+        return;
+      }
+      // Allow proceeding to next step
+      setCurrentStep(2);
     } else if (currentStep === 2) {
-      toast.success('Pickup preferences saved! Proceeding to bank details.');
+      if (!formData.isPanVerified) {
+        toast.error('Please verify your PAN before continuing.');
+        return;
+      }
       setCurrentStep(3);
     } else if (currentStep === 3) {
-      if (!formData.accountNumber.trim()) {
-        toast.error('Bank account number is required.');
+      if (!formData.isGstinVerified) {
+        toast.error('Please validate your GSTIN before continuing.');
         return;
       }
-      if (formData.accountNumber !== formData.confirmAccountNumber) {
-        toast.error('Bank account numbers do not match.');
+      setCurrentStep(4);
+    } else if (currentStep === 4) {
+      if (!formData.accountNumber.trim() || !formData.ifscCode.trim() || !formData.accountHolderName.trim()) {
+        toast.error('All bank account fields are required.');
         return;
       }
-      if (!formData.ifscCode.trim()) {
-        toast.error('IFSC code is required.');
-        return;
-      }
-
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
+      try {
+        await sellerApi.verifyBank({
+          accountNumber: formData.accountNumber,
+          ifscCode: formData.ifscCode.toUpperCase(),
+          accountHolderName: formData.accountHolderName,
+        });
+        
+        setFormData(prev => ({ ...prev, isBankPending: true }));
+        
         try {
           localStorage.setItem('sellerOnboardingCompleted', 'true');
         } catch (e) {}
-        toast.success('🎉 Congratulations! Store onboarding completed successfully.');
+        
+        toast.success('🎉 Registration submitted successfully!');
         router.push('/business/dashboard');
-      }, 1000);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Bank Account Verification failed.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -211,393 +192,418 @@ export default function SellerOnboardingPage() {
     }
   };
 
+  // Helper for Stepper UI
+  const steps = [
+    { num: 1, title: 'Profile & Business', desc: 'Complete your personal and business details' },
+    { num: 2, title: 'PAN Verification', desc: 'Verify your PAN details' },
+    { num: 3, title: 'GSTIN Verification', desc: 'Verify your GSTIN details' },
+    { num: 4, title: 'Bank Account', desc: 'Verify your bank account details' },
+  ];
+
   return (
-    <div className="onboarding-container">
-      {/* Header */}
-      <div className="onboarding-header">
-        <div>
-          <h2 className="onboarding-title">Seller Onboarding</h2>
+    <div className="onboarding-page-container">
+      {/* Top Branding (Since Sidebar is hidden) */}
+      <div className="onboarding-brand-header">
+        <img src="/logo.png" alt="Anevix" className="onboarding-brand-logo" onError={(e) => e.target.style.display='none'} />
+        <span className="onboarding-brand-text">Anevix <span className="badge">Seller</span></span>
+      </div>
+
+      <div className="onboarding-content-wrapper">
+        {/* LEFT COLUMN: Main Form */}
+      <div className="onboarding-main-content">
+        <div className="onboarding-header">
+          <h2 className="onboarding-title">Seller Registration</h2>
           <p className="onboarding-subtitle">
-            Complete your store registration to start listing and selling on Anevix.
+            Complete your registration to start selling on Anevix. It only takes a few minutes.
           </p>
         </div>
-        <div className="onboarding-badge">Step {currentStep} of 3</div>
-      </div>
 
-      {/* Stepper Bar */}
-      <div className="onboarding-stepper">
-        <div
-          className={`step-item ${currentStep === 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}
-          onClick={() => setCurrentStep(1)}
-        >
-          <div className="step-circle">
-            {currentStep > 1 ? '✓' : '1'}
-          </div>
-          <div className="step-info">
-            <span className="step-number">Step 1</span>
-            <span className="step-name">Complete Your Profile</span>
-          </div>
+        {/* Horizontal Stepper */}
+        <div className="h-stepper">
+          {steps.map((step, idx) => (
+            <React.Fragment key={step.num}>
+              <div className={`h-step ${currentStep === step.num ? 'active' : ''} ${currentStep > step.num ? 'completed' : ''}`}>
+                <div className={`h-step-circle ${currentStep > step.num ? 'completed-icon' : ''}`}>
+                  {currentStep > step.num ? <CheckCircle fontSize="inherit" color="inherit" style={{ fontSize: '18px' }} /> : step.num}
+                </div>
+                <span>{step.title}</span>
+              </div>
+              {idx < steps.length - 1 && <div className="h-step-divider"></div>}
+            </React.Fragment>
+          ))}
         </div>
 
-        <div className={`step-divider ${currentStep > 1 ? 'completed' : ''}`}></div>
+        {/* Form Card */}
+        <div className="onboarding-form-card">
+          <form onSubmit={handleNextStep}>
+            
+            {/* STEP 1: Profile & Business Information */}
+            {currentStep === 1 && (
+              <>
+                <h3 className="form-step-title">
+                  <PersonOutlineOutlined className="step-icon" /> 1. Personal Information
+                </h3>
 
-        <div
-          className={`step-item ${currentStep === 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}
-          onClick={() => currentStep > 1 && setCurrentStep(2)}
-        >
-          <div className="step-circle">
-            {currentStep > 2 ? '✓' : '2'}
-          </div>
-          <div className="step-info">
-            <span className="step-number">Step 2</span>
-            <span className="step-name">Shipping & Logistics</span>
-          </div>
-        </div>
-
-        <div className={`step-divider ${currentStep > 2 ? 'completed' : ''}`}></div>
-
-        <div
-          className={`step-item ${currentStep === 3 ? 'active' : ''}`}
-          onClick={() => currentStep > 2 && setCurrentStep(3)}
-        >
-          <div className="step-circle">3</div>
-          <div className="step-info">
-            <span className="step-number">Step 3</span>
-            <span className="step-name">Bank & Payout Details</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Form Card */}
-      <div className="onboarding-card">
-        <form onSubmit={handleNextStep} className="onboarding-form">
-          {/* STEP 1: Complete Your Profile (with API Integration) */}
-          {currentStep === 1 && (
-            <>
-              <div className="card-step-header">
-                <h3>Step 1: Complete Your Profile & Addresses</h3>
-                <p>Provide your company details, business address, and residential address.</p>
-              </div>
-
-              {/* Company & Business / Seller Type */}
-              <div className="form-field-group">
-                <label>Company / Store Name <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="companyName"
-                  placeholder="e.g. Acme Corp"
-                  value={formData.companyName}
-                  onChange={handleRootChange}
-                  required
-                />
-              </div>
-
-              <div className="form-grid-2">
-                <div className="form-field-group">
-                  <label>Business Type <span className="required">*</span></label>
-                  <select
-                    name="businessType"
-                    value={formData.businessType}
-                    onChange={handleRootChange}
-                  >
-                    <option value="PRIVATE_LIMITED">Private Limited (PRIVATE_LIMITED)</option>
-                    <option value="PROPRIETORSHIP">Sole Proprietorship (PROPRIETORSHIP)</option>
-                    <option value="PARTNERSHIP">Partnership Firm (PARTNERSHIP)</option>
-                    <option value="LLP">Limited Liability Partnership (LLP)</option>
-                    <option value="PUBLIC_LIMITED">Public Limited (PUBLIC_LIMITED)</option>
-                    <option value="INDIVIDUAL">Individual / Freelancer (INDIVIDUAL)</option>
-                  </select>
+                <div className="form-grid-3">
+                  <div className="form-field">
+                    <label>Full Name <span className="required">*</span></label>
+                    <input type="text" name="fullName" placeholder="e.g. John Doe" value={formData.fullName} onChange={handleRootChange} required />
+                  </div>
+                  <div className="form-field">
+                    <label>Mobile Number <span className="required">*</span></label>
+                    <input type="text" name="mobileNumber" placeholder="+91 98765 43210" value={formData.mobileNumber} onChange={handleRootChange} required />
+                  </div>
+                  <div className="form-field">
+                    <label>Email Address <span className="required">*</span></label>
+                    <input type="email" name="emailAddress" placeholder="you@domain.com" value={formData.emailAddress} onChange={handleRootChange} disabled required />
+                  </div>
                 </div>
 
-                <div className="form-field-group">
-                  <label>Seller Type <span className="required">*</span></label>
-                  <select
-                    name="sellerType"
-                    value={formData.sellerType}
-                    onChange={handleRootChange}
-                  >
-                    <option value="RETAILER">Retailer (RETAILER)</option>
-                    <option value="WHOLESALER">Wholesaler (WHOLESALER)</option>
-                    <option value="MANUFACTURER">Manufacturer (MANUFACTURER)</option>
-                    <option value="DISTRIBUTOR">Distributor (DISTRIBUTOR)</option>
-                    <option value="BRAND_OWNER">Brand Owner (BRAND_OWNER)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Business Address Section */}
-              <div className="form-section-title">
-                <span>Business Address</span>
-              </div>
-
-              <div className="form-field-group">
-                <label>Street Address <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="street"
-                  placeholder="e.g. 123 Tech Park"
-                  value={formData.businessAddress.street}
-                  onChange={handleBusinessAddressChange}
-                  required
-                />
-              </div>
-
-              <div className="form-grid-3">
-                <div className="form-field-group">
-                  <label>City <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="city"
-                    placeholder="e.g. Bangalore"
-                    value={formData.businessAddress.city}
-                    onChange={handleBusinessAddressChange}
-                    required
-                  />
+                <div className="form-grid-3">
+                  <div className="form-field">
+                    <label>Date of Birth <span className="required">(Optional)</span></label>
+                    <input type="text" name="dob" placeholder="DD / MM / YYYY" value={formData.dob} onChange={handleRootChange} />
+                  </div>
                 </div>
 
-                <div className="form-field-group">
-                  <label>State <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="state"
-                    placeholder="e.g. KARNATAKA"
-                    value={formData.businessAddress.state}
-                    onChange={handleBusinessAddressChange}
-                    required
-                  />
+                <h3 className="form-step-title" style={{ marginTop: '32px' }}>
+                  <DescriptionOutlined className="step-icon" /> Business Information
+                </h3>
+
+                <div className="form-grid-3">
+                  <div className="form-field" style={{ gridColumn: 'span 3' }}>
+                    <label>Business Name <span className="required">*</span></label>
+                    <input type="text" name="companyName" placeholder="e.g. Acme Corp" value={formData.companyName} onChange={handleRootChange} required />
+                  </div>
                 </div>
 
-                <div className="form-field-group">
-                  <label>ZIP / PIN Code <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    placeholder="e.g. 560001"
-                    maxLength={10}
-                    value={formData.businessAddress.zipCode}
-                    onChange={handleBusinessAddressChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Residential Address Section */}
-              <div className="form-section-title">
-                <span>Residential Address</span>
-                <label className="same-address-toggle">
-                  <input
-                    type="checkbox"
-                    checked={sameAsBusinessAddress}
-                    onChange={handleSameAddressToggle}
-                  />
-                  Same as Business Address
-                </label>
-              </div>
-
-              <div className="form-field-group">
-                <label>Street Address <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="street"
-                  placeholder="e.g. 456 Home St"
-                  value={formData.residentialAddress.street}
-                  onChange={handleResidentialAddressChange}
-                  disabled={sameAsBusinessAddress}
-                  required
-                />
-              </div>
-
-              <div className="form-grid-3">
-                <div className="form-field-group">
-                  <label>City <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="city"
-                    placeholder="e.g. Bangalore"
-                    value={formData.residentialAddress.city}
-                    onChange={handleResidentialAddressChange}
-                    disabled={sameAsBusinessAddress}
-                    required
-                  />
+                <div className="form-grid-2">
+                  <div className="form-field">
+                    <label>Business Type <span className="required">*</span></label>
+                    <select name="businessType" value={formData.businessType} onChange={handleRootChange} required>
+                      <option value="PRIVATE_LIMITED">Private Limited</option>
+                      <option value="PROPRIETORSHIP">Sole Proprietorship</option>
+                      <option value="PARTNERSHIP">Partnership Firm</option>
+                      <option value="LLP">Limited Liability Partnership</option>
+                      <option value="PUBLIC_LIMITED">Public Limited</option>
+                      <option value="INDIVIDUAL">Individual / Freelancer</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label>Seller Type <span className="required">*</span></label>
+                    <select name="sellerType" value={formData.sellerType} onChange={handleRootChange} required>
+                      <option value="RETAILER">Retailer</option>
+                      <option value="WHOLESALER">Wholesaler</option>
+                      <option value="MANUFACTURER">Manufacturer</option>
+                      <option value="DISTRIBUTOR">Distributor</option>
+                      <option value="BRAND_OWNER">Brand Owner</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="form-field-group">
-                  <label>State <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="state"
-                    placeholder="e.g. KARNATAKA"
-                    value={formData.residentialAddress.state}
-                    onChange={handleResidentialAddressChange}
-                    disabled={sameAsBusinessAddress}
-                    required
-                  />
+                <div className="form-field">
+                  <label>Business Address <span className="required">*</span></label>
+                  <input type="text" name="street" placeholder="House no., Street, Area" value={formData.street} onChange={handleRootChange} required />
                 </div>
 
-                <div className="form-field-group">
-                  <label>ZIP / PIN Code <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    placeholder="e.g. 560002"
-                    maxLength={10}
-                    value={formData.residentialAddress.zipCode}
-                    onChange={handleResidentialAddressChange}
-                    disabled={sameAsBusinessAddress}
-                    required
-                  />
+                <div className="form-grid-3">
+                  <div className="form-field">
+                    <label>City <span className="required">*</span></label>
+                    <input type="text" name="city" placeholder="e.g. Bangalore" value={formData.city} onChange={handleRootChange} required />
+                  </div>
+                  <div className="form-field">
+                    <label>State <span className="required">*</span></label>
+                    <select name="state" value={formData.state} onChange={handleRootChange} required>
+                      <option value="">Select State</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="Maharashtra">Maharashtra</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label>PIN Code <span className="required">*</span></label>
+                    <input type="text" name="pinCode" placeholder="e.g. 560001" value={formData.pinCode} onChange={handleRootChange} required />
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* STEP 2: Shipping & Logistics Preferences */}
-          {currentStep === 2 && (
-            <>
-              <div className="card-step-header">
-                <h3>Step 2: Shipping & Courier Preferences</h3>
-                <p>Configure how parcels are packed, dispatched, and picked up from your business location.</p>
-              </div>
-
-              <div className="form-grid-2">
-                <div className="form-field-group">
-                  <label>Dispatch Lead Time</label>
-                  <select defaultValue="1_DAY">
-                    <option value="SAME_DAY">Same Day Dispatch</option>
-                    <option value="1_DAY">1 Business Day</option>
-                    <option value="2_DAYS">2 Business Days</option>
-                    <option value="3_DAYS">3 Business Days</option>
-                  </select>
-                </div>
-
-                <div className="form-field-group">
-                  <label>Primary Courier Partner</label>
-                  <select defaultValue="ANEVIX_LOGISTICS">
-                    <option value="ANEVIX_LOGISTICS">Anevix Express Logistics (Recommended)</option>
-                    <option value="SELF_SHIP">Self-Ship / Merchant Delivery</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-field-group">
-                <label>Pickup Location Verified</label>
-                <input
-                  type="text"
-                  disabled
-                  value={`${formData.businessAddress.street}, ${formData.businessAddress.city}, ${formData.businessAddress.state} - ${formData.businessAddress.zipCode}`}
-                />
-              </div>
-            </>
-          )}
-
-          {/* STEP 3: Bank & Payout Details */}
-          {currentStep === 3 && (
-            <>
-              <div className="card-step-header">
-                <h3>Step 3: Bank Account for Seller Payouts</h3>
-                <p>Provide verified bank details to receive scheduled sales disbursements and settlements.</p>
-              </div>
-
-              <div className="form-grid-2">
-                <div className="form-field-group">
-                  <label>Bank Name <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="bankName"
-                    placeholder="e.g. HDFC Bank / ICICI / SBI"
-                    value={formData.bankName}
-                    onChange={handleRootChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-field-group">
-                  <label>Account Holder Name <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="accountHolderName"
-                    placeholder="Name as printed in passbook / cheque"
-                    value={formData.accountHolderName}
-                    onChange={handleRootChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-grid-2">
-                <div className="form-field-group">
-                  <label>Bank Account Number <span className="required">*</span></label>
-                  <input
-                    type="password"
-                    name="accountNumber"
-                    placeholder="Enter Account Number"
-                    value={formData.accountNumber}
-                    onChange={handleRootChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-field-group">
-                  <label>Confirm Account Number <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="confirmAccountNumber"
-                    placeholder="Re-enter Account Number"
-                    value={formData.confirmAccountNumber}
-                    onChange={handleRootChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-field-group">
-                <label>Bank IFSC Code <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="ifscCode"
-                  placeholder="e.g. HDFC0001234"
-                  maxLength={11}
-                  value={formData.ifscCode}
-                  onChange={(e) => setFormData({ ...formData, ifscCode: e.target.value.toUpperCase() })}
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          {/* Form Action Bar */}
-          <div className="form-action-bar">
-            {currentStep > 1 ? (
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={handlePrevStep}
-              >
-                <ArrowBackOutlined fontSize="small" style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                Back
-              </button>
-            ) : (
-              <div></div>
+              </>
             )}
 
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={loading}
-            >
-              {loading
-                ? 'Submitting...'
-                : currentStep === 3
-                ? 'Complete Onboarding & Launch'
-                : (
-                  <>
-                    Save & Continue
-                    <ArrowForwardOutlined fontSize="small" />
-                  </>
+            {/* STEP 2: PAN Verification */}
+            {currentStep === 2 && (
+              <>
+                <h3 className="form-step-title">
+                  <DescriptionOutlined className="step-icon" /> 2. PAN Verification
+                </h3>
+                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
+                  Enter your PAN details and verify it. This helps us ensure a safe and trusted marketplace.
+                </p>
+
+                <div className="verify-input-group">
+                  <div className="form-field">
+                    <label>PAN Number <span className="required">*</span></label>
+                    <input type="text" name="panNumber" placeholder="e.g. ABCDE1234F" maxLength={10} value={formData.panNumber} onChange={handleRootChange} disabled={formData.isPanVerified} required />
+                  </div>
+                  <div className="form-field">
+                    <label>Name as per PAN <span className="required">*</span></label>
+                    <input type="text" name="nameOnPan" placeholder="e.g. John Doe" value={formData.nameOnPan} onChange={handleRootChange} disabled={formData.isPanVerified} required />
+                  </div>
+                  {!formData.isPanVerified && (
+                    <button type="button" className="btn-verify" onClick={handleVerifyPan} disabled={loading}>
+                      Verify PAN
+                    </button>
+                  )}
+                </div>
+
+                {formData.isPanVerified && (
+                  <div className="verified-card">
+                    <div className="verified-card-header">
+                      <CheckCircle fontSize="small" /> PAN Verified
+                    </div>
+                    <div className="verified-details-grid">
+                      <div className="verified-detail-item">
+                        <span className="label">Name</span>
+                        <span className="value">{formData.nameOnPan || 'John Doe'}</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">PAN Number</span>
+                        <span className="value">{formData.panNumber || 'ABCDE1234F'}</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Verification Date</span>
+                        <span className="value">01 Oct 2026, 11:45 AM</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Reference ID</span>
+                        <span className="value">PANV-001234</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
-            </button>
+
+                <div className="info-alert">
+                  <InfoOutlined fontSize="small" />
+                  <span>Your PAN details are secure. We use a trusted third-party KYC provider to verify your identity.</span>
+                </div>
+              </>
+            )}
+
+            {/* STEP 3: GSTIN Verification */}
+            {currentStep === 3 && (
+              <>
+                <h3 className="form-step-title">
+                  <DescriptionOutlined className="step-icon" /> 3. GSTIN Verification
+                </h3>
+                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
+                  GST requirement may vary based on your business type and category. Please provide your GSTIN details.
+                </p>
+
+                <div className="requirement-alert">
+                  <InfoOutlined style={{ color: '#0f172a' }} />
+                  <div className="req-content">
+                    <h4>GST Requirement <span className="req-badge">Required</span></h4>
+                    <p>Your selected business type and category require GSTIN.</p>
+                  </div>
+                </div>
+
+                <div className="verify-input-group" style={{ marginBottom: '24px', maxWidth: '600px' }}>
+                  <div className="form-field">
+                    <label>GSTIN <span className="required">*</span></label>
+                    <input type="text" name="gstinNumber" placeholder="e.g. 22AAAAA0000A1Z5" value={formData.gstinNumber} onChange={handleRootChange} disabled={formData.isGstinVerified} required />
+                  </div>
+                  {!formData.isGstinVerified && (
+                    <button type="button" className="btn-verify" onClick={handleValidateGstin} disabled={loading}>
+                      Validate GSTIN
+                    </button>
+                  )}
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-field">
+                    <label>Legal Business Name <span className="required">*</span></label>
+                    <input type="text" placeholder="e.g. Anevix Traders" value="Anevix Traders" disabled />
+                  </div>
+                  <div className="form-field">
+                    <label>Trade Name <span className="required">(Optional)</span></label>
+                    <input type="text" placeholder="e.g. Anevix" value="Anevix" disabled />
+                  </div>
+                </div>
+
+                <div className="form-grid-3">
+                  <div className="form-field">
+                    <label>Registration Status <span className="required">*</span></label>
+                    <select disabled><option>Active</option></select>
+                  </div>
+                  <div className="form-field">
+                    <label>State <span className="required">*</span></label>
+                    <select disabled><option>Karnataka</option></select>
+                  </div>
+                  <div className="form-field">
+                    <label>Registration Date</label>
+                    <input type="text" placeholder="DD / MM / YYYY" value="01 / 10 / 2024" disabled />
+                  </div>
+                </div>
+
+                {formData.isGstinVerified && (
+                  <div className="verified-card">
+                    <div className="verified-card-header">
+                      <CheckCircle fontSize="small" /> GSTIN Verified
+                    </div>
+                    <div className="verified-details-grid">
+                      <div className="verified-detail-item">
+                        <span className="label">Legal Name</span>
+                        <span className="value">Anevix Traders</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Trade Name</span>
+                        <span className="value">Anevix</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">State</span>
+                        <span className="value">Karnataka</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Status</span>
+                        <span className="value" style={{ color: '#16a34a' }}>Active</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Ref ID</span>
+                        <span className="value">GSTV-001234</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* STEP 4: Bank Account */}
+            {currentStep === 4 && (
+              <>
+                <h3 className="form-step-title">
+                  <AccountBalanceOutlined className="step-icon" /> Bank Account Verification
+                </h3>
+                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
+                  Your bank account must be verified before you can withdraw your marketplace earnings.
+                </p>
+
+                <div className="form-grid-3">
+                  <div className="form-field">
+                    <label>Account Holder Name <span className="required">*</span></label>
+                    <input type="text" name="accountHolderName" placeholder="e.g. John Doe" value={formData.accountHolderName} onChange={handleRootChange} required />
+                  </div>
+                  <div className="form-field">
+                    <label>Bank Name <span className="required">*</span></label>
+                    <select name="bankName" value={formData.bankName} onChange={handleRootChange}>
+                      <option value="State Bank of India">State Bank of India</option>
+                      <option value="HDFC Bank">HDFC Bank</option>
+                      <option value="ICICI Bank">ICICI Bank</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label>Account Number <span className="required">*</span></label>
+                    <input type="text" name="accountNumber" placeholder="e.g. 123456789012" value={formData.accountNumber} onChange={handleRootChange} required />
+                  </div>
+                </div>
+
+                <div className="form-grid-2" style={{ gridTemplateColumns: '1fr 2fr' }}>
+                  <div className="form-field">
+                    <label>IFSC <span className="required">*</span></label>
+                    <input type="text" name="ifscCode" placeholder="e.g. SBIN0001234" value={formData.ifscCode} onChange={handleRootChange} required />
+                  </div>
+                  <div className="form-field">
+                    <label>Cancelled Cheque / Bank Document <span className="required">*</span></label>
+                    <div className="file-upload-box">
+                      <FileUploadOutlined className="upload-icon" />
+                      <span className="upload-text">Click to upload or drag and drop</span>
+                      <span className="upload-subtext">PDF, JPG, PNG (Max 5MB)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {formData.isBankPending && (
+                  <div className="verified-card pending">
+                    <div className="verified-card-header">
+                      <DescriptionOutlined fontSize="small" /> Bank Account: Pending
+                    </div>
+                    <div className="verified-details-grid">
+                      <div className="verified-detail-item">
+                        <span className="label">Account Holder</span>
+                        <span className="value">{formData.accountHolderName}</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Bank Name</span>
+                        <span className="value">{formData.bankName}</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Account Number</span>
+                        <span className="value">*******{formData.accountNumber.slice(-4)}</span>
+                      </div>
+                      <div className="verified-detail-item">
+                        <span className="label">Verification Date</span>
+                        <span className="value">-</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="info-alert warning">
+                  <InfoOutlined fontSize="small" />
+                  <span>Payouts will be enabled after your bank account is verified.</span>
+                </div>
+              </>
+            )}
+
+            <div className="form-actions">
+              {currentStep > 1 ? (
+                <button type="button" className="btn-back" onClick={handlePrevStep}>
+                  <ArrowBackOutlined fontSize="small" /> Back
+                </button>
+              ) : (
+                <div></div>
+              )}
+              <button type="submit" className="btn-primary" disabled={loading}>
+                {loading ? 'Processing...' : (currentStep === 4 ? 'Submit Registration' : 'Save & Continue')}
+                {currentStep < 4 && <ArrowForwardOutlined fontSize="small" />}
+              </button>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Sidebar Progress */}
+      <div className="onboarding-sidebar">
+        <div className="progress-sidebar-card">
+          <h3>
+            <AssignmentTurnedInOutlined style={{ color: '#ff6a00' }} />
+            Registration Progress
+          </h3>
+          <div className="v-stepper">
+            {steps.map((step, idx) => {
+              const isCompleted = currentStep > step.num;
+              const isActive = currentStep === step.num;
+              return (
+                <div key={step.num} className={`v-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>
+                  {idx < steps.length - 1 && <div className="v-step-line"></div>}
+                  <div className="v-step-circle">
+                    {isCompleted ? <CheckCircle fontSize="inherit" /> : step.num}
+                  </div>
+                  <div className="v-step-content">
+                    <div className="v-step-title">
+                      {step.title}
+                      {isCompleted && <CheckCircleOutlined className="status-icon" fontSize="small" />}
+                    </div>
+                    <div className="v-step-desc">
+                      {step.desc}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </form>
+        </div>
+      </div>
+
       </div>
     </div>
   );

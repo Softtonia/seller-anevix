@@ -35,15 +35,20 @@ export const API_ENDPOINTS = {
   // Seller Endpoints
   SELLER: {
     ONBOARDING_STEP1: '/seller/onboarding/step1',
+    ONBOARDING: {
+      PAN: '/business/onboarding/pan',
+      GSTIN: '/business/onboarding/gstin',
+      BANK: '/business/onboarding/bank',
+    }
   },
   // Roles
   ROLES: '/roles',
   // Users / Profile
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
-    CHANGE_PASSWORD: '/user/change-password',
-    ADDRESSES: '/user/addresses',
+    PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/profile',
+    CHANGE_PASSWORD: '/users/change-password',
+    ADDRESSES: '/users/addresses',
     LOGOUT: '/users/logout',
   },
   // Products
