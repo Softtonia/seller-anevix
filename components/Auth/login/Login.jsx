@@ -79,6 +79,12 @@ export default function Login() {
       }
       if (res.data?.user) {
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        
+        // Redirect to onboarding if account is not active
+        if (res.data.user.accountActive === false || res.data.user.accountactive === false) {
+          router.push('/business/onboarding');
+          return;
+        }
       }
 
       // Redirect

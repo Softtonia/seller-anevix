@@ -17,7 +17,6 @@ import toast from 'react-hot-toast';
 import { sellerApi } from '@/api';
 import apiClient from '@/api/axiosClient';
 import { useSeller } from '@/contexts/SellerContext';
-import RejectedFieldsForm from './RejectedFieldsForm';
 import './Onboarding.css';
 
 export default function SellerOnboardingPage() {
@@ -33,10 +32,22 @@ export default function SellerOnboardingPage() {
   const getFieldError = (fieldName) => {
     if (!isRejected) return null;
     let fieldObj = rejectedFields.find(f => f.field === fieldName);
+    if (!fieldObj && fieldName === 'gstinNumber') fieldObj = rejectedFields.find(f => f.field === 'gstin');
+    if (!fieldObj && fieldName === 'panNumber') fieldObj = rejectedFields.find(f => f.field === 'pan');
+    if (!fieldObj && fieldName === 'companyName') fieldObj = rejectedFields.find(f => f.field === 'businessName');
     if (!fieldObj && fieldName === 'bankDocument') {
       fieldObj = rejectedFields.find(f => f.field === 'bankDocumentUrl');
     }
     return fieldObj ? fieldObj.reason : null;
+  };
+
+  const isFieldVisible = (fieldName) => {
+    if (!isRejected) return true;
+    if (fieldName === 'bankDocument') return rejectedFields.some(f => f.field === 'bankDocument' || f.field === 'bankDocumentUrl');
+    if (fieldName === 'gstinNumber') return rejectedFields.some(f => f.field === 'gstinNumber' || f.field === 'gstin');
+    if (fieldName === 'panNumber') return rejectedFields.some(f => f.field === 'panNumber' || f.field === 'pan');
+    if (fieldName === 'companyName') return rejectedFields.some(f => f.field === 'companyName' || f.field === 'businessName');
+    return rejectedFields.some(f => f.field === fieldName);
   };
 
   const isFieldDisabled = (fieldName, defaultDisabled) => {
@@ -44,6 +55,9 @@ export default function SellerOnboardingPage() {
       if (fieldName === 'bankDocument') {
         return !rejectedFields.some(f => f.field === 'bankDocument' || f.field === 'bankDocumentUrl');
       }
+      if (fieldName === 'gstinNumber') return !rejectedFields.some(f => f.field === 'gstinNumber' || f.field === 'gstin');
+      if (fieldName === 'panNumber') return !rejectedFields.some(f => f.field === 'panNumber' || f.field === 'pan');
+      if (fieldName === 'companyName') return !rejectedFields.some(f => f.field === 'companyName' || f.field === 'businessName');
       return !rejectedFields.some(f => f.field === fieldName);
     }
     return defaultDisabled;
@@ -52,6 +66,28 @@ export default function SellerOnboardingPage() {
 
   // Load saved progress from localStorage on mount
   useEffect(() => {
+    if (isRejected && rejectedFields.length > 0) {
+      const step1 = ['companyName', 'businessName', 'fullName', 'mobileNumber', 'emailAddress', 'businessType', 'sellerType', 'street', 'city', 'state', 'pinCode'];
+      const step2 = ['panNumber', 'pan', 'nameOnPan'];
+      const step3 = ['gstinNumber', 'gstin', 'businessName', 'tradeName'];
+      const step4 = ['accountNumber', 'ifscCode', 'accountHolderName', 'bankName', 'bankDocument', 'bankDocumentUrl'];
+      
+      let minStep = 4;
+      rejectedFields.forEach(f => {
+        if (step1.includes(f.field)) minStep = Math.min(minStep, 1);
+        else if (step2.includes(f.field)) minStep = Math.min(minStep, 2);
+        else if (step3.includes(f.field)) minStep = Math.min(minStep, 3);
+        else if (step4.includes(f.field)) minStep = Math.min(minStep, 4);
+      });
+      
+      // Only set if we haven't already navigated, ensuring we don't trap the user or infinite loop
+      setCurrentStep((prev) => {
+        if (prev === 1 && minStep !== 1) return minStep;
+        return prev;
+      });
+      return; // Skip localStorage if rejected
+    }
+
     try {
       const savedStep = localStorage.getItem('onboardingStep');
       if (savedStep) {
@@ -64,7 +100,7 @@ export default function SellerOnboardingPage() {
     } catch (e) {
       console.warn("Failed to load onboarding progress from localStorage", e);
     }
-  }, []);
+  }, [isRejected]); // Removed rejectedFields to prevent reference equality loops
 
   // Save progress on change
   useEffect(() => {
@@ -121,7 +157,7 @@ export default function SellerOnboardingPage() {
       setFormData((prev) => {
         let newData = { ...prev };
         
-        newData.fullName = sellerProfile.name || sellerProfile.firstName ? `${sellerProfile.firstName || ''} ${sellerProfile.lastName || ''}`.trim() : prev.fullName;
+        newData.fullName = sellerProfile.name || (sellerProfile.firstName ? `${sellerProfile.firstName || ''} ${sellerProfile.lastName || ''}`.trim() : prev.fullName);
         newData.mobileNumber = sellerProfile.phoneNumber || sellerProfile.mobileNumber || sellerProfile.phone || prev.mobileNumber;
         newData.emailAddress = sellerProfile.email || prev.emailAddress;
 
@@ -156,8 +192,8 @@ export default function SellerOnboardingPage() {
             isBankVerified: true,
           };
           
-          if (rejectedFields.some(f => f.field === 'panNumber')) newData.isPanVerified = false;
-          if (rejectedFields.some(f => f.field === 'gstinNumber')) newData.isGstinVerified = false;
+          if (rejectedFields.some(f => f.field === 'panNumber' || f.field === 'pan')) newData.isPanVerified = false;
+          if (rejectedFields.some(f => f.field === 'gstinNumber' || f.field === 'gstin')) newData.isGstinVerified = false;
           if (rejectedFields.some(f => f.field === 'accountNumber' || f.field === 'ifscCode' || f.field === 'accountHolderName' || f.field === 'bankDocumentUrl' || f.field === 'bankDocument')) newData.isBankVerified = false;
         }
         return newData;
@@ -291,26 +327,26 @@ export default function SellerOnboardingPage() {
             }
           }
         });
-        setCurrentStep(2);
+        setCurrentStep(getNextStepNum(1));
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to save Step 1 details.');
       } finally {
         setLoading(false);
       }
     } else if (currentStep === 2) {
-      if (!formData.isPanVerified) {
+      if (!isRejected && !formData.isPanVerified) {
         toast.error('Please verify your PAN before continuing.');
         return;
       }
-      setCurrentStep(3);
+      setCurrentStep(getNextStepNum(2));
     } else if (currentStep === 3) {
-      if (!formData.isGstinVerified) {
+      if (!isRejected && !formData.isGstinVerified) {
         toast.error('Please validate your GSTIN before continuing.');
         return;
       }
-      setCurrentStep(4);
+      setCurrentStep(getNextStepNum(3));
     } else if (currentStep === 4) {
-      if (!formData.isBankVerified) {
+      if (!isRejected && !formData.isBankVerified) {
         toast.error('Please verify your bank account before submitting.');
         return;
       }
@@ -366,18 +402,44 @@ export default function SellerOnboardingPage() {
   };
 
   const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
+  setCurrentStep(getPrevStepNum(currentStep));
+};
 
   // Helper for Stepper UI
-  const steps = [
+  
+  const allSteps = [
     { num: 1, title: 'Profile & Business', desc: 'Complete your personal and business details' },
     { num: 2, title: 'PAN Verification', desc: 'Verify your PAN details' },
     { num: 3, title: 'GSTIN Verification', desc: 'Verify your GSTIN details' },
     { num: 4, title: 'Bank Account', desc: 'Verify your bank account details' },
   ];
+  
+  const visibleSteps = isRejected ? allSteps.filter(step => {
+    if (step.num === 1) return ['fullName', 'mobileNumber', 'emailAddress', 'dob', 'companyName', 'businessName', 'businessType', 'sellerType', 'street', 'city', 'state', 'pinCode'].some(f => rejectedFields.some(rf => rf.field === f));
+    if (step.num === 2) return ['panNumber', 'pan', 'nameOnPan'].some(f => rejectedFields.some(rf => rf.field === f));
+    if (step.num === 3) return ['gstinNumber', 'gstin'].some(f => rejectedFields.some(rf => rf.field === f));
+    if (step.num === 4) return ['accountHolderName', 'bankName', 'accountNumber', 'ifscCode', 'bankDocument'].some(f => rejectedFields.some(rf => rf.field === f || rf.field === 'bankDocumentUrl'));
+    return true;
+  }) : allSteps;
+
+  const steps = allSteps; // <-- UI always renders all 4 steps
+
+  const getNextStepNum = (current) => {
+    const currentIndex = visibleSteps.findIndex(s => s.num === current);
+    if (currentIndex !== -1 && currentIndex < visibleSteps.length - 1) {
+      return visibleSteps[currentIndex + 1].num;
+    }
+    return visibleSteps.length > 0 ? visibleSteps[visibleSteps.length - 1].num : current;
+  };
+  
+  const getPrevStepNum = (current) => {
+    const currentIndex = visibleSteps.findIndex(s => s.num === current);
+    if (currentIndex > 0) {
+      return visibleSteps[currentIndex - 1].num;
+    }
+    return visibleSteps.length > 0 ? visibleSteps[0].num : current;
+  };
+
 
   return (
     <div className="onboarding-page-container">
@@ -398,11 +460,14 @@ export default function SellerOnboardingPage() {
         </div>
 
         {/* Horizontal Stepper */}
-        {!isRejected && (
         <div className="h-stepper">
           {steps.map((step, idx) => (
             <React.Fragment key={step.num}>
-              <div className={`h-step ${currentStep === step.num ? 'active' : ''} ${currentStep > step.num ? 'completed' : ''}`}>
+              <div 
+                className={`h-step ${currentStep === step.num ? 'active' : ''} ${currentStep > step.num ? 'completed' : ''}`}
+                style={{ cursor: (isRejected && visibleSteps.some(s => s.num === step.num)) ? 'pointer' : 'default' }}
+                onClick={() => { if (isRejected && visibleSteps.some(s => s.num === step.num)) setCurrentStep(step.num); }}
+              >
                 <div className={`h-step-circle ${currentStep > step.num ? 'completed-icon' : ''}`}>
                   {currentStep > step.num ? <CheckCircle fontSize="inherit" color="inherit" style={{ fontSize: '18px' }} /> : step.num}
                 </div>
@@ -412,16 +477,8 @@ export default function SellerOnboardingPage() {
             </React.Fragment>
           ))}
         </div>
-        )}
 
-        {isRejected ? (
-          <RejectedFieldsForm
-            key={formData.fullName} // to remount when initialData is fully loaded
-            rejectedFields={rejectedFields}
-            initialData={formData}
-            reviewNotes={reviewNotes}
-          />
-        ) : (
+        
         <div className="onboarding-form-card">
           <form className="onboarding-form" onSubmit={handleNextStep}>
             
@@ -433,17 +490,17 @@ export default function SellerOnboardingPage() {
                 </h3>
 
                 <div className="form-grid-3">
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('fullName') ? undefined : 'none' }}>
                     <label>Full Name <span className="required">*</span></label>
                     <input type="text" name="fullName" placeholder="e.g. John Doe" value={formData.fullName} onChange={handleRootChange} required  disabled={isFieldDisabled("fullName", false)} />
 {getFieldError("fullName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("fullName")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('mobileNumber') ? undefined : 'none' }}>
                     <label>Mobile Number <span className="required">*</span></label>
                     <input type="text" name="mobileNumber" placeholder="+91 98765 43210" value={formData.mobileNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("mobileNumber", false)} />
 {getFieldError("mobileNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("mobileNumber")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('emailAddress') ? undefined : 'none' }}>
                     <label>Email Address <span className="required">*</span></label>
                     <input type="email" name="emailAddress" placeholder="you@domain.com" value={formData.emailAddress} onChange={handleRootChange} required  disabled={isFieldDisabled("emailAddress", false)} />
 {getFieldError("emailAddress") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("emailAddress")}</div>}
@@ -451,9 +508,9 @@ export default function SellerOnboardingPage() {
                 </div>
 
                 <div className="form-grid-3">
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('dob') ? undefined : 'none' }}>
                     <label>Date of Birth <span className="required">(Optional)</span></label>
-                    <input type="text" name="dob" placeholder="DD / MM / YYYY" value={formData.dob} onChange={handleRootChange}  disabled={isFieldDisabled("dob", false)} />
+                    <input type="date" name="dob" value={formData.dob} onChange={handleRootChange}  disabled={isFieldDisabled("dob", false)} />
 {getFieldError("dob") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("dob")}</div>}
                   </div>
                 </div>
@@ -463,15 +520,15 @@ export default function SellerOnboardingPage() {
                 </h3>
 
                 <div className="form-grid-3">
-                  <div className="form-field" style={{ gridColumn: 'span 3' }}>
+                  <div className="form-field" style={{ display: isFieldVisible('companyName') ? undefined : 'none' }} style={{ gridColumn: 'span 3' }}>
                     <label>Business Name <span className="required">*</span></label>
                     <input type="text" name="companyName" placeholder="e.g. Acme Corp" value={formData.companyName} onChange={handleRootChange} required  disabled={isFieldDisabled("companyName", false)} />
 {getFieldError("companyName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("companyName")}</div>}
                   </div>
                 </div>
 
-                <div className="form-grid-2">
-                  <div className="form-field">
+                <div className="form-grid-2" style={{ display: isRejected ? "none" : "grid" }}>
+                  <div className="form-field" style={{ display: isFieldVisible('businessType') ? undefined : 'none' }}>
                     <label>Business Type <span className="required">*</span></label>
                     <select name="businessType" value={formData.businessType} onChange={handleRootChange} required disabled={isFieldDisabled("businessType", false)}>
                       <option value="PRIVATE_LIMITED">Private Limited</option>
@@ -483,7 +540,7 @@ export default function SellerOnboardingPage() {
                     </select>
 {getFieldError("businessType") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("businessType")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('sellerType') ? undefined : 'none' }}>
                     <label>Seller Type <span className="required">*</span></label>
                     <select name="sellerType" value={formData.sellerType} onChange={handleRootChange} required disabled={isFieldDisabled("sellerType", false)}>
                       <option value="RETAILER">Retailer</option>
@@ -496,19 +553,19 @@ export default function SellerOnboardingPage() {
                   </div>
                 </div>
 
-                <div className="form-field">
-                  <label>Business Address <span className="required">*</span></label>
+                <div className="form-field" style={{ display: isFieldVisible('street') ? undefined : 'none' }}>
+                    <label>Business Address <span className="required">*</span></label>
                   <input type="text" name="street" placeholder="House no., Street, Area" value={formData.street} onChange={handleRootChange} required  disabled={isFieldDisabled("street", false)} />
 {getFieldError("street") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("street")}</div>}
                 </div>
 
                 <div className="form-grid-3">
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('city') ? undefined : 'none' }}>
                     <label>City <span className="required">*</span></label>
                     <input type="text" name="city" placeholder="e.g. Bangalore" value={formData.city} onChange={handleRootChange} required  disabled={isFieldDisabled("city", false)} />
 {getFieldError("city") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("city")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('state') ? undefined : 'none' }}>
                     <label>State <span className="required">*</span></label>
                     <select name="state" value={formData.state} onChange={handleRootChange} required disabled={isFieldDisabled("state", false)}>
                       <option value="">Select State</option>
@@ -519,7 +576,7 @@ export default function SellerOnboardingPage() {
                     </select>
 {getFieldError("state") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("state")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('pinCode') ? undefined : 'none' }}>
                     <label>PIN Code (6 digits) <span className="required">*</span></label>
                     <input type="text" name="pinCode" placeholder="e.g. 560001" maxLength={6} pattern="\d{6}" title="Please enter a valid 6-digit PIN code" value={formData.pinCode} onChange={handleRootChange} required  disabled={isFieldDisabled("pinCode", false)} />
 {getFieldError("pinCode") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("pinCode")}</div>}
@@ -539,24 +596,24 @@ export default function SellerOnboardingPage() {
                 </p>
 
                 <div className="verify-input-group">
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('panNumber') ? undefined : 'none' }}>
                     <label>PAN Number (Max 10 digits) <span className="required">*</span></label>
                     <input type="text" name="panNumber" placeholder="e.g. ABCDE1234F" maxLength={10} value={formData.panNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("panNumber", formData.isPanVerified)} />
 {getFieldError("panNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("panNumber")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('nameOnPan') ? undefined : 'none' }}>
                     <label>Name as per PAN <span className="required">*</span></label>
                     <input type="text" name="nameOnPan" placeholder="e.g. John Doe" value={formData.nameOnPan} onChange={handleRootChange} required  disabled={isFieldDisabled("nameOnPan", formData.isPanVerified)} />
 {getFieldError("nameOnPan") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("nameOnPan")}</div>}
                   </div>
-                  {!formData.isPanVerified && (
+                  {!isRejected && !formData.isPanVerified && (
                     <button type="button" className="btn-verify" onClick={handleVerifyPan} disabled={loading}>
                       Verify PAN
                     </button>
                   )}
                 </div>
 
-                {formData.isPanVerified && (
+                {(!isRejected && formData.isPanVerified) && (
                   <div className="verified-card">
                     <div className="verified-card-header">
                       <CheckCircle fontSize="small" /> PAN Verified
@@ -599,7 +656,7 @@ export default function SellerOnboardingPage() {
                   GST requirement may vary based on your business type and category. Please provide your GSTIN details.
                 </p>
 
-                <div className="requirement-alert">
+                <div className="requirement-alert" style={{ display: isRejected ? "none" : "flex" }}>
                   <InfoOutlined style={{ color: '#0f172a' }} />
                   <div className="req-content">
                     <h4>GST Requirement <span className="req-badge">Required</span></h4>
@@ -608,19 +665,19 @@ export default function SellerOnboardingPage() {
                 </div>
 
                 <div className="verify-input-group" style={{ marginBottom: '24px', maxWidth: '600px' }}>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('gstinNumber') ? undefined : 'none' }}>
                     <label>GSTIN <span className="required">*</span></label>
                     <input type="text" name="gstinNumber" placeholder="e.g. 22AAAAA0000A1Z5" value={formData.gstinNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("gstinNumber", formData.isGstinVerified)} />
 {getFieldError("gstinNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("gstinNumber")}</div>}
                   </div>
-                  {!formData.isGstinVerified && (
+                  {!isRejected && !formData.isGstinVerified && (
                     <button type="button" className="btn-verify" onClick={handleValidateGstin} disabled={loading}>
                       Validate GSTIN
                     </button>
                   )}
                 </div>
 
-                <div className="form-grid-2">
+                <div className="form-grid-2" style={{ display: isRejected ? 'none' : 'grid' }}>
                   <div className="form-field">
                     <label>Legal Business Name <span className="required">*</span></label>
                     <input type="text" placeholder="e.g. Anevix Traders" value="Anevix Traders" disabled />
@@ -631,7 +688,7 @@ export default function SellerOnboardingPage() {
                   </div>
                 </div>
 
-                <div className="form-grid-3">
+                <div className="form-grid-3" style={{ display: isRejected ? 'none' : 'grid' }}>
                   <div className="form-field">
                     <label>Registration Status <span className="required">*</span></label>
                     <select disabled><option>Active</option></select>
@@ -646,7 +703,7 @@ export default function SellerOnboardingPage() {
                   </div>
                 </div>
 
-                {formData.isGstinVerified && (
+                {!isRejected && formData.isGstinVerified && (
                   <div className="verified-card">
                     <div className="verified-card-header">
                       <CheckCircle fontSize="small" /> GSTIN Verified
@@ -693,12 +750,12 @@ export default function SellerOnboardingPage() {
                 </p>
 
                 <div className="form-grid-3">
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('accountHolderName') ? undefined : 'none' }}>
                     <label>Account Holder Name <span className="required">*</span></label>
                     <input type="text" name="accountHolderName" placeholder="e.g. John Doe" value={formData.accountHolderName} onChange={handleRootChange} required  disabled={isFieldDisabled("accountHolderName", formData.isBankVerified)} />
 {getFieldError("accountHolderName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("accountHolderName")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('bankName') ? undefined : 'none' }}>
                     <label>Bank Name <span className="required">*</span></label>
                     <select name="bankName" value={formData.bankName} onChange={handleRootChange} disabled={isFieldDisabled("bankName", formData.isBankVerified)}>
                       <option value="State Bank of India">State Bank of India</option>
@@ -707,7 +764,7 @@ export default function SellerOnboardingPage() {
                     </select>
 {getFieldError("bankName") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("bankName")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('accountNumber') ? undefined : 'none' }}>
                     <label>Account Number <span className="required">*</span></label>
                     <input type="text" name="accountNumber" placeholder="e.g. 123456789012" value={formData.accountNumber} onChange={handleRootChange} required  disabled={isFieldDisabled("accountNumber", formData.isBankVerified)} />
 {getFieldError("accountNumber") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("accountNumber")}</div>}
@@ -715,12 +772,12 @@ export default function SellerOnboardingPage() {
                 </div>
 
                 <div className="form-grid-2" style={{ gridTemplateColumns: '1fr 2fr' }}>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('ifscCode') ? undefined : 'none' }}>
                     <label>IFSC <span className="required">*</span></label>
                     <input type="text" name="ifscCode" placeholder="e.g. SBIN0001234" value={formData.ifscCode} onChange={handleRootChange} required  disabled={isFieldDisabled("ifscCode", formData.isBankVerified)} />
 {getFieldError("ifscCode") && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{getFieldError("ifscCode")}</div>}
                   </div>
-                  <div className="form-field">
+                  <div className="form-field" style={{ display: isFieldVisible('bankDocument') ? undefined : 'none' }}>
                     <label>Cancelled Cheque / Bank Document <span className="required">*</span></label>
                     <div className="file-upload-box">
                       <input type="file" id="bankDocument" name="bankDocument" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleRootChange} />
@@ -736,7 +793,7 @@ export default function SellerOnboardingPage() {
                   </div>
                 </div>
 
-                {!formData.isBankVerified && (
+                {!isRejected && !formData.isBankVerified && (
                   <div style={{ marginTop: '24px' }}>
                     <button type="button" className="btn-verify" onClick={handleVerifyBank} disabled={loading}>
                       Verify Bank Account
@@ -744,7 +801,7 @@ export default function SellerOnboardingPage() {
                   </div>
                 )}
 
-                {formData.isBankVerified && (
+                {!isRejected && formData.isBankVerified && (
                   <div className="verified-card">
                     <div className="verified-card-header">
                       <CheckCircle fontSize="small" /> Bank Account Verified
@@ -778,7 +835,7 @@ export default function SellerOnboardingPage() {
             )}
 
             <div className="form-actions">
-              {currentStep > 1 ? (
+              {visibleSteps.findIndex(s => s.num === currentStep) > 0 ? (
                 <button type="button" className="btn-back" onClick={handlePrevStep}>
                   <ArrowBackOutlined fontSize="small" /> Back
                 </button>
@@ -786,24 +843,34 @@ export default function SellerOnboardingPage() {
                 <div></div>
               )}
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Processing...' : (currentStep === 4 ? (isRejected ? 'Resubmit Application' : 'Submit Registration') : 'Save & Continue')}
+                {loading ? 'Processing...' : ((currentStep === 4 || (isRejected && steps.length > 0 && currentStep === visibleSteps[visibleSteps.length - 1].num)) ? (isRejected ? 'Resubmit Application' : 'Submit Registration') : 'Save & Continue')}
                 {currentStep < 4 && <ArrowForwardOutlined fontSize="small" />}
               </button>
             </div>
             
           </form>
         </div>
-        )}
       </div>
 
       {/* RIGHT COLUMN: Sidebar Progress */}
-      {!isRejected && (
       <div className="onboarding-sidebar">
         <div className="progress-sidebar-card">
           <h3>
             <AssignmentTurnedInOutlined style={{ color: '#ff6a00' }} />
             Registration Progress
           </h3>
+          
+          {isRejected && (
+            <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '12px', marginBottom: '20px' }}>
+              <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <InfoOutlined fontSize="small" />
+                Action Required
+              </div>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#991b1b', lineHeight: '1.4' }}>
+                Your application needs corrections. Please fix the highlighted fields and resubmit.
+              </p>
+            </div>
+          )}
           <div className="v-stepper">
             {steps.map((step, idx) => {
               const isCompleted = currentStep > step.num;
@@ -829,7 +896,6 @@ export default function SellerOnboardingPage() {
           </div>
         </div>
       </div>
-      )}
 
       </div>
     </div>

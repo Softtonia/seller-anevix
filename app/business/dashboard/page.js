@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   TrendingUpOutlined,
   Inventory2Outlined,
@@ -14,12 +15,15 @@ import {
   AssignmentOutlined,
   AccessTimeFilled,
   PersonOutlineOutlined,
-  AddCircleOutlineOutlined
+  AddCircleOutlineOutlined,
+  LogoutOutlined
 } from '@mui/icons-material';
 import { useSeller } from '@/contexts/SellerContext';
+import { authApi } from '@/api';
 import './Dashboard.css';
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState({ firstName: 'Seller', lastName: '' });
   const { sellerProfile, isLoading: contextLoading } = useSeller();
 
@@ -71,7 +75,12 @@ export default function BusinessDashboardPage() {
   ];
 
   if (contextLoading) {
-    return <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>Loading...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '100px' }}>
+        <div style={{ width: '32px', height: '32px', border: '3px solid #f3f3f3', borderTop: '3px solid #f97316', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
   }
 
   if (onboardingStatus === 'REJECTED' || onboardingStatus === 'PENDING' || onboardingStatus === 'pending' || onboardingStatus === 'IN_PROGRESS' || onboardingStatus === 'DRAFT') {
@@ -83,15 +92,7 @@ export default function BusinessDashboardPage() {
 
   if (onboardingStatus === 'UNDER_REVIEW') {
     return (
-      <>
-        <style>{`
-          .business-sidebar { display: none !important; }
-          .business-topbar { display: none !important; }
-          .business-main-wrapper { margin-left: 0 !important; width: 100vw !important; max-width: 100% !important; }
-          .business-content { padding: 0 !important; max-width: 100% !important; }
-          body, html { margin: 0; padding: 0; background: #fbfbfc; }
-        `}</style>
-        <div className="under-review-screen-v2">
+      <div className="under-review-screen-v2">
         <div className="ur-left">
           <div className="ur-illustration">
             <div className="ur-blob"></div>
@@ -114,9 +115,28 @@ export default function BusinessDashboardPage() {
             Thank you for completing your registration! Our team is currently reviewing your details. 
             This process usually takes 24-48 hours. We will notify you via email once your account is activated.
           </p>
+          <button 
+            onClick={async () => { await authApi.logout(); router.push('/signup'); }} 
+            style={{ 
+              marginTop: '32px', 
+              padding: '12px 24px', 
+              backgroundColor: '#fff', 
+              color: '#ef4444', 
+              border: '1px solid #fecaca', 
+              borderRadius: '8px', 
+              fontSize: '15px', 
+              fontWeight: '600', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}
+          >
+            <LogoutOutlined fontSize="small" /> Logout
+          </button>
         </div>
       </div>
-      </>
     );
   }
 
